@@ -1,39 +1,59 @@
-﻿<#@ template language="C#" #>
+﻿﻿<#@ template debug="false" hostspecific="false" language="C#" linePragmas="false" #>
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
+#pragma warning disable CS8669
+#pragma warning disable CS8625
 using System;
 
 namespace UnitGenerator
 {
     [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
-    public class UnitOfAttribute : Attribute
+    internal class UnitOfAttribute : Attribute
     {
         public Type Type { get; }
+
+        public UnitOfAttribute(Type type)
+        {
+            this.Type = type;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
+    internal class GenerateFlagsAttribute : Attribute
+    {
         public UnitGenerateOptions Options { get; }
 
-        public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None)
+        public GenerateFlagsAttribute(UnitGenerateOptions options)
         {
-            Type = type;
-            Options = options;
+            this.Options = options;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
+    internal class ToStringFormatAttribute : Attribute
+    {
+        public string Format { get; }
+
+        public ToStringFormatAttribute(string format)
+        {
+            this.Format = format;
         }
     }
 
     [Flags]
-    public enum UnitGenerateOptions
+    internal enum UnitGenerateOptions
     {
         None = 0,
         ImplicitOperator = 1,
         ParseMethod = 2,
-        WithoutArithmeticOperator = 4,
-        WithoutComparable = 8,
-        JsonConverter = 16,
-        MessagePackFormatter = 32,
-        DapperTypeHandler = 64,
-        EntityFrameworkValueConverter = 128,
-        // TypeConverter
-        // MessagePackFormatter
-        // [JsonConverter
+        ArithmeticOperator = 4,
+        ValueArithmeticOperator = 8,
+        Comparable = 16,
+        JsonConverter = 32,
+        MessagePackFormatter = 64,
+        DapperTypeHandler = 128,
+        EntityFrameworkValueConverter = 256,
     }
 }

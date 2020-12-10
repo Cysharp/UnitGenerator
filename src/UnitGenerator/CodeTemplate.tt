@@ -1,0 +1,233 @@
+﻿﻿<#@ template debug="false" hostspecific="false" language="C#" linePragmas="false" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+#pragma warning disable CS8669
+using System;
+
+namespace <#= Namespace #>
+{
+<# if (HasFlag(UnitGenerateOptions.JsonConverter)) { #> 
+
+<# } #>
+<# if (HasFlag(UnitGenerateOptions.MessagePackFormatter)) { #> 
+
+<# } #>
+    [System.ComponentModel.TypeConverter(typeof(<#= Name #>TypeConverter))]
+    public readonly partial struct <#= Name #> : IEquatable<<#= Type #>> <#= HasFlag(UnitGenerateOptions.Comparable) ? $", IComparable<{Type}>" : "" #>
+    {
+        readonly <#= Type #> value;
+
+        public readonly <#= Type #> AsPrimitive() => value;
+
+        public <#= Name #>(<#= Type #> value)
+        {
+            this.value = value;
+        }
+
+        public static <#= HasFlag(UnitGenerateOptions.ImplicitOperator) ? "implicit" : "explicit" #> operator <#= Type #>(<#= Name #> value)
+        {
+            return value.value;
+        }
+
+        public static <#= HasFlag(UnitGenerateOptions.ImplicitOperator) ? "implicit" : "explicit" #> operator <#= Name #>(<#= Type #> value)
+        {
+            return new <#= Name #>(value);
+        }
+
+        public bool Equals(<#= Type #> other)
+        {
+            return this.Equals(other);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return value.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+<# if (ToStringFormat == null) { #>
+            return "<#= Name #>(" + value + ")";
+<# } else { #>
+            return string.Format("<#= ToStringFormat #>", value);
+<# } #>
+        }
+
+        public static bool operator ==(<#= Name #> x, <#= Name #> y)
+        {
+            return x.Equals(y);
+        }
+
+        public static bool operator !=(<#= Name #> x, <#= Name #> y)
+        {
+            return !x.Equals(y);
+        }
+
+<# if (HasFlag(UnitGenerateOptions.ParseMethod)) { #> 
+
+
+<# } #>
+
+<# if (Type == "bool") { #>
+        
+        public static <#= Type #> operator true(<#= Name #> x)
+        {
+            return x.value;
+        }
+        
+        public static <#= Type #> operator false(<#= Name #> x)
+        {
+            return !x.value;
+        }
+        
+        public static <#= Type #> operator !(<#= Name #> x)
+        {
+            return !x.value;
+        }
+
+<# } #>
+
+<# if (HasFlag(UnitGenerateOptions.ArithmeticOperator)) { #> 
+
+        public static <#= Name #> operator +(<#= Name #> x, <#= Name #> y)
+        {
+            return new <#= Name #>(x.value + y.value);
+        }
+
+        public static <#= Name #> operator -(<#= Name #> x, <#= Name #> y)
+        {
+            return new <#= Name #>(x.value - y.value);
+        }
+
+        public static <#= Name #> operator *(<#= Name #> x, <#= Name #> y)
+        {
+            return new <#= Name #>(x.value * y.value);
+        }
+
+        public static <#= Name #> operator /(<#= Name #> x, <#= Name #> y)
+        {
+            return new <#= Name #>(x.value / y.value);
+        }
+
+<# } #>
+
+<# if (HasFlag(UnitGenerateOptions.ValueArithmeticOperator)) { #> 
+
+        public static <#= Name #> operator +(<#= Name #> x, <#= Type #> y)
+        {
+            return new <#= Name #>(x.value + y);
+        }
+
+        public static <#= Name #> operator -(<#= Name #> x, <#= Type #> y)
+        {
+            return new <#= Name #>(x.value - y);
+        }
+
+        public static <#= Name #> operator *(<#= Name #> x, <#= Type #> y)
+        {
+            return new <#= Name #>(x.value * y);
+        }
+
+        public static <#= Name #> operator /(<#= Name #> x, <#= Type #> y)
+        {
+            return new <#= Name #>(x.value / y);
+        }
+
+<# } #>
+
+<# if (HasFlag(UnitGenerateOptions.Comparable)) { #> 
+
+        public int CompareTo(<#= Name #> other)
+        {
+            return value.CompareTo(other);
+        }
+
+<# } #>
+
+<# if (HasFlag(UnitGenerateOptions.JsonConverter)) { #> 
+
+
+<# } #>
+
+<# if (HasFlag(UnitGenerateOptions.MessagePackFormatter)) { #> 
+
+
+<# } #>
+
+<# if (HasFlag(UnitGenerateOptions.DapperTypeHandler)) { #> 
+
+
+<# } #>
+
+<# if (HasFlag(UnitGenerateOptions.EntityFrameworkValueConverter)) { #> 
+
+
+<# } #>
+
+        private class <#= Name #>TypeConverter : System.ComponentModel.TypeConverter
+        {
+            private static readonly Type WrapperType = typeof(<#= Name #>);
+            private static readonly Type ValueType = typeof(<#= Type #>);
+
+            public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, Type sourceType)
+            {
+                if (sourceType == WrapperType || sourceType == ValueType)
+                {
+                    return true;
+                }
+
+                return base.CanConvertFrom(context, sourceType);
+            }
+
+            public override bool CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, Type destinationType)
+            {
+                if (destinationType == WrapperType || destinationType == ValueType)
+                {
+                    return true;
+                }
+
+                return base.CanConvertTo(context, destinationType);
+            }
+
+            public override object ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+            {
+                if (value is <#= Type #> underlyingValue)
+                {
+                    return new <#= Name #>(underlyingValue);
+                }
+                
+                if (value is <#= Name #> wrapperValue)
+                {
+                    return wrapperValue;
+                }
+
+                return base.ConvertFrom(context, culture, value);
+            }
+
+            public override object ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+            {
+                if (value is <#= Name #> wrappedValue)
+                {
+                    if (destinationType == WrapperType)
+                    {
+                        return wrappedValue;
+                    }
+
+                    if (destinationType == ValueType)
+                    {
+                        return wrappedValue.AsPrimitive();
+                    }
+                }
+
+                return base.ConvertTo(context, culture, value, destinationType);
+            }
+        }
+    }
+}

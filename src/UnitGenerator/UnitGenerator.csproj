@@ -12,6 +12,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Update="CodeTemplate.tt">
+	    <Generator>TextTemplatingFilePreprocessor</Generator>
+	    <LastGenOutput>CodeTemplate.cs</LastGenOutput>
+	  </None>
 	  <None Update="UnitOfAttributeTemplate.tt">
 	    <Generator>TextTemplatingFilePreprocessor</Generator>
 	    <LastGenOutput>UnitOfAttributeTemplate.cs</LastGenOutput>
@@ -23,6 +27,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="CodeTemplate.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>CodeTemplate.tt</DependentUpon>
+	  </Compile>
 	  <Compile Update="UnitOfAttributeTemplate.cs">
 	    <DesignTime>True</DesignTime>
 	    <AutoGen>True</AutoGen>

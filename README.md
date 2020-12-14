@@ -160,8 +160,22 @@ public readonly partial struct UserId
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-## 📖 Table of Contents
+## Table of Contents
 
+- [UnitOfAttribute](#unitofattribute)
+- [UnitGenerateOptions](#unitgenerateoptions)
+  - [ImplicitOperator](#implicitoperator)
+  - [ParseMethod](#parsemethod)
+  - [MinMaxMethod](#minmaxmethod)
+  - [ArithmeticOperator](#arithmeticoperator)
+  - [ValueArithmeticOperator](#valuearithmeticoperator)
+  - [Comparable](#comparable)
+  - [Validate](#validate)
+  - [JsonConverter](#jsonconverter)
+  - [MessagePackFormatter](#messagepackformatter)
+  - [DapperTypeHandler](#dappertypehandler)
+  - [EntityFrameworkValueConverter](#entityframeworkvalueconverter)
+- [Use for Unity](#use-for-unity)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->

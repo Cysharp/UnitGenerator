@@ -14,7 +14,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 <# } #>
 
+<# if (!string.IsNullOrEmpty(Namespace)) { #>
 namespace <#= Namespace #>
+<# } #>
 {
 <# if (HasFlag(UnitGenerateOptions.JsonConverter)) { #> 
     [JsonConverter(typeof(<#= Name #>JsonConverter))]
@@ -58,16 +60,20 @@ namespace <#= Namespace #>
 
         public override bool Equals(object? obj)
         {
-            if (obj is <#= Type #> v)
+            if (obj is <#= Name #> v)
             {
                 return Equals(v);
+            }
+            if (obj is <#= Type #> v2)
+            {
+                return value.Equals(v2);
             }
             return value.Equals(obj);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return value.GetHashCode();
         }
 
         public override string ToString()
@@ -93,7 +99,7 @@ namespace <#= Namespace #>
 
         public static <#= Name #> Parse(string s)
         {
-            return <#= Type #>.Parse(s);
+            return new <#= Name #>(<#= Type #>.Parse(s));
         }
         
         public static bool TryParse(string s, out <#= Name #> result)
@@ -105,7 +111,7 @@ namespace <#= Namespace #>
             }
             else
             {
-                result = default(<#= Type #>);
+                result = default(<#= Name #>);
                 return false;
             }
         }
@@ -135,22 +141,34 @@ namespace <#= Namespace #>
 
         public static <#= Name #> operator +(in <#= Name #> x, in <#= Name #> y)
         {
-            return new <#= Name #>(x.value + y.value);
+            checked
+            {
+                return new <#= Name #>((<#= Type #>)(x.value + y.value));
+            }
         }
 
         public static <#= Name #> operator -(in <#= Name #> x, in <#= Name #> y)
         {
-            return new <#= Name #>(x.value - y.value);
+            checked
+            {
+                return new <#= Name #>((<#= Type #>)(x.value - y.value));
+            }
         }
 
         public static <#= Name #> operator *(in <#= Name #> x, in <#= Name #> y)
         {
-            return new <#= Name #>(x.value * y.value);
+            checked
+            {
+                return new <#= Name #>((<#= Type #>)(x.value * y.value));
+            }
         }
 
         public static <#= Name #> operator /(in <#= Name #> x, in <#= Name #> y)
         {
-            return new <#= Name #>(x.value / y.value);
+            checked
+            {
+                return new <#= Name #>((<#= Type #>)(x.value / y.value));
+            }
         }
 
 <# } #>
@@ -159,32 +177,50 @@ namespace <#= Namespace #>
 
         public static <#= Name #> operator ++(in <#= Name #> x)
         {
-            return new <#= Name #>(x.value + 1);
+            checked
+            {
+                return new <#= Name #>((<#= Type #>)(x.value + 1));
+            }
         }
 
         public static <#= Name #> operator --(in <#= Name #> x)
         {
-            return new <#= Name #>(x.value - 1);
+            checked
+            {
+                return new <#= Name #>((<#= Type #>)(x.value - 1));
+            }
         }
 
         public static <#= Name #> operator +(in <#= Name #> x, in <#= Type #> y)
         {
-            return new <#= Name #>(x.value + y);
+            checked
+            {
+                return new <#= Name #>((<#= Type #>)(x.value + y));
+            }
         }
 
         public static <#= Name #> operator -(in <#= Name #> x, in <#= Type #> y)
         {
-            return new <#= Name #>(x.value - y);
+            checked
+            {
+                return new <#= Name #>((<#= Type #>)(x.value - y));
+            }
         }
 
         public static <#= Name #> operator *(in <#= Name #> x, in <#= Type #> y)
         {
-            return new <#= Name #>(x.value * y);
+            checked
+            {
+                return new <#= Name #>((<#= Type #>)(x.value * y));
+            }
         }
 
         public static <#= Name #> operator /(in <#= Name #> x, in <#= Type #> y)
         {
-            return new <#= Name #>(x.value / y);
+            checked
+            {
+                return new <#= Name #>((<#= Type #>)(x.value / y));
+            }
         }
 
 <# } #>
@@ -360,4 +396,6 @@ namespace <#= Namespace #>
             }
         }
     }
+<# if (!string.IsNullOrEmpty(Namespace)) { #>
 }
+<# } #>

@@ -96,14 +96,4 @@ namespace ConsoleApp
             _ = AsPrimitive();
         }
     }
-
-    //[UnitOf(typeof(bool), UnitGenerateOptions.All)]
-    //public readonly partial struct K
-    //{
-    //    private partial void Validate()
-    //    {
-    //        _ = AsPrimitive();
-    //    }
-    //}
-
 }

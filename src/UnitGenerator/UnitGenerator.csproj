@@ -1,42 +1,60 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>preview</LangVersion>
 		<Nullable>enable</Nullable>
+		<NoWarn>$(NoWarn);CS1591</NoWarn>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+
+		<!-- NuGet -->
+		<PackageId>UnitGenerator</PackageId>
+		<Description>C# Source Generator to create ValueObject, inspired by units of measure.</Description>
+
+		<PackageVersion>$(Version)</PackageVersion>
+		<Company>Cysharp</Company>
+		<Authors>Cysharp</Authors>
+		<Copyright>© Cysharp, Inc.</Copyright>
+		<PackageTags>sourcegenerator;valueobject</PackageTags>
+		<PackageProjectUrl>https://github.com/Cysharp/UnitGenerator</PackageProjectUrl>
+		<RepositoryUrl>$(PackageProjectUrl)</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageIcon>Icon.png</PackageIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" PrivateAssets="all" />
-		<PackageReference Include="System.CodeDom" Version="5.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="CodeTemplate.tt">
-	    <Generator>TextTemplatingFilePreprocessor</Generator>
-	    <LastGenOutput>CodeTemplate.cs</LastGenOutput>
-	  </None>
-	  <None Update="UnitOfAttributeTemplate.tt">
-	    <Generator>TextTemplatingFilePreprocessor</Generator>
-	    <LastGenOutput>UnitOfAttributeTemplate.cs</LastGenOutput>
-	  </None>
+		<None Include="Icon.png" Pack="true" PackagePath="/" />
+
+		<None Update="CodeTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>CodeTemplate.cs</LastGenOutput>
+		</None>
+		<None Update="UnitOfAttributeTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>UnitOfAttributeTemplate.cs</LastGenOutput>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="CodeTemplate.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>CodeTemplate.tt</DependentUpon>
-	  </Compile>
-	  <Compile Update="UnitOfAttributeTemplate.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>UnitOfAttributeTemplate.tt</DependentUpon>
-	  </Compile>
+		<Compile Update="CodeTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>CodeTemplate.tt</DependentUpon>
+		</Compile>
+		<Compile Update="UnitOfAttributeTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>UnitOfAttributeTemplate.tt</DependentUpon>
+		</Compile>
 	</ItemGroup>
 
 </Project>

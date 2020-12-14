@@ -32,10 +32,10 @@ namespace UnitGenerator
                 "sbyte" => DbType.SByte,
                 "float" => DbType.Single,
                 "double" => DbType.Double,
-                "DateTime" => DbType.DateTime,
-                "DateTimeOffset" => DbType.DateTimeOffset,
-                "TimeSpan" => DbType.Time,
-                "Guid" => DbType.Guid,
+                "System.DateTime" => DbType.DateTime,
+                "System.DateTimeOffset" => DbType.DateTimeOffset,
+                "System.TimeSpan" => DbType.Time,
+                "System.Guid" => DbType.Guid,
                 "decimal" => DbType.Currency,
                 _ => DbType.Object
             };

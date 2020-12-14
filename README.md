@@ -4,9 +4,7 @@ Ulid
 
 C# Source Generator to create ValueObject, inspired by units of measure.
 
-![image](https://user-images.githubusercontent.com/46207/55129636-266c0d00-515b-11e9-85ab-3437de539451.png)
-
-NuGet: [Ulid](https://www.nuget.org/packages/UnitGenerator)
+NuGet: [UnitGenerator](https://www.nuget.org/packages/UnitGenerator)
 
 ```
 Install-Package UnitGenerator

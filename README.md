@@ -1,4 +1,4 @@
-Ulid
+UnitGenerator
 ===
 [![GitHub Actions](https://github.com/Cysharp/UnitGenerator/workflows/Build-Debug/badge.svg)](https://github.com/Cysharp/UnitGenerator/actions) [![Releases](https://img.shields.io/github/release/Cysharp/UnitGenerator.svg)](https://github.com/Cysharp/UnitGenerator/releases)
 

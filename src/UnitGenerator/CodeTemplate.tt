@@ -5,17 +5,25 @@
 <#@ import namespace="System.Collections.Generic" #>
 #pragma warning disable CS8669
 using System;
+<# if (HasFlag(UnitGenerateOptions.MessagePackFormatter)) { #> 
+using MessagePack;
+using MessagePack.Formatters;
+<# } #>
+<# if (HasFlag(UnitGenerateOptions.JsonConverter)) { #> 
+using System.Text.Json;
+using System.Text.Json.Serialization;
+<# } #>
 
 namespace <#= Namespace #>
 {
 <# if (HasFlag(UnitGenerateOptions.JsonConverter)) { #> 
-
+    [JsonConverter(typeof(<#= Name #>JsonConverter))]
 <# } #>
 <# if (HasFlag(UnitGenerateOptions.MessagePackFormatter)) { #> 
-
+    [MessagePackFormatter(typeof(<#= Name #>MessagePackFormatter))]
 <# } #>
     [System.ComponentModel.TypeConverter(typeof(<#= Name #>TypeConverter))]
-    public readonly partial struct <#= Name #> : IEquatable<<#= Type #>> <#= HasFlag(UnitGenerateOptions.Comparable) ? $", IComparable<{Type}>" : "" #>
+    public readonly partial struct <#= Name #> : IEquatable<<#= Name #>> <#= HasFlag(UnitGenerateOptions.Comparable) ? $", IComparable<{Name}>" : "" #>
     {
         readonly <#= Type #> value;
 
@@ -24,7 +32,14 @@ namespace <#= Namespace #>
         public <#= Name #>(<#= Type #> value)
         {
             this.value = value;
+<# if (HasFlag(UnitGenerateOptions.Validate)) { #> 
+            this.Validate();
+<# } #>
         }
+
+<# if (HasFlag(UnitGenerateOptions.Validate)) { #> 
+        private partial void Validate();
+<# } #>
 
         public static <#= HasFlag(UnitGenerateOptions.ImplicitOperator) ? "implicit" : "explicit" #> operator <#= Type #>(<#= Name #> value)
         {
@@ -36,13 +51,17 @@ namespace <#= Namespace #>
             return new <#= Name #>(value);
         }
 
-        public bool Equals(<#= Type #> other)
+        public bool Equals(<#= Name #> other)
         {
-            return this.Equals(other);
+            return value.Equals(other.value);
         }
 
         public override bool Equals(object? obj)
         {
+            if (obj is <#= Type #> v)
+            {
+                return Equals(v);
+            }
             return value.Equals(obj);
         }
 
@@ -60,18 +79,36 @@ namespace <#= Namespace #>
 <# } #>
         }
 
-        public static bool operator ==(<#= Name #> x, <#= Name #> y)
+        public static bool operator ==(in <#= Name #> x, in <#= Name #> y)
         {
-            return x.Equals(y);
+            return x.value == y.value;
         }
 
-        public static bool operator !=(<#= Name #> x, <#= Name #> y)
+        public static bool operator !=(in <#= Name #> x, in <#= Name #> y)
         {
-            return !x.Equals(y);
+            return x.value != y.value;
         }
 
 <# if (HasFlag(UnitGenerateOptions.ParseMethod)) { #> 
 
+        public static <#= Name #> Parse(string s)
+        {
+            return <#= Type #>.Parse(s);
+        }
+        
+        public static bool TryParse(string s, out <#= Name #> result)
+        {
+            if(<#= Type #>.TryParse(s, out var r))
+            {
+                result = new <#= Name #>(r);
+                return true;
+            }
+            else
+            {
+                result = default(<#= Type #>);
+                return false;
+            }
+        }
 
 <# } #>
 
@@ -96,22 +133,22 @@ namespace <#= Namespace #>
 
 <# if (HasFlag(UnitGenerateOptions.ArithmeticOperator)) { #> 
 
-        public static <#= Name #> operator +(<#= Name #> x, <#= Name #> y)
+        public static <#= Name #> operator +(in <#= Name #> x, in <#= Name #> y)
         {
             return new <#= Name #>(x.value + y.value);
         }
 
-        public static <#= Name #> operator -(<#= Name #> x, <#= Name #> y)
+        public static <#= Name #> operator -(in <#= Name #> x, in <#= Name #> y)
         {
             return new <#= Name #>(x.value - y.value);
         }
 
-        public static <#= Name #> operator *(<#= Name #> x, <#= Name #> y)
+        public static <#= Name #> operator *(in <#= Name #> x, in <#= Name #> y)
         {
             return new <#= Name #>(x.value * y.value);
         }
 
-        public static <#= Name #> operator /(<#= Name #> x, <#= Name #> y)
+        public static <#= Name #> operator /(in <#= Name #> x, in <#= Name #> y)
         {
             return new <#= Name #>(x.value / y.value);
         }
@@ -120,22 +157,32 @@ namespace <#= Namespace #>
 
 <# if (HasFlag(UnitGenerateOptions.ValueArithmeticOperator)) { #> 
 
-        public static <#= Name #> operator +(<#= Name #> x, <#= Type #> y)
+        public static <#= Name #> operator ++(in <#= Name #> x)
+        {
+            return new <#= Name #>(x.value + 1);
+        }
+
+        public static <#= Name #> operator --(in <#= Name #> x)
+        {
+            return new <#= Name #>(x.value - 1);
+        }
+
+        public static <#= Name #> operator +(in <#= Name #> x, in <#= Type #> y)
         {
             return new <#= Name #>(x.value + y);
         }
 
-        public static <#= Name #> operator -(<#= Name #> x, <#= Type #> y)
+        public static <#= Name #> operator -(in <#= Name #> x, in <#= Type #> y)
         {
             return new <#= Name #>(x.value - y);
         }
 
-        public static <#= Name #> operator *(<#= Name #> x, <#= Type #> y)
+        public static <#= Name #> operator *(in <#= Name #> x, in <#= Type #> y)
         {
             return new <#= Name #>(x.value * y);
         }
 
-        public static <#= Name #> operator /(<#= Name #> x, <#= Type #> y)
+        public static <#= Name #> operator /(in <#= Name #> x, in <#= Type #> y)
         {
             return new <#= Name #>(x.value / y);
         }
@@ -148,26 +195,109 @@ namespace <#= Namespace #>
         {
             return value.CompareTo(other);
         }
+        
+        public static bool operator >(in <#= Name #> x, in <#= Name #> y)
+        {
+            return x.value > y.value;
+        }
+
+        public static bool operator <(in <#= Name #> x, in <#= Name #> y)
+        {
+            return x.value < y.value;
+        }
+
+        public static bool operator >=(in <#= Name #> x, in <#= Name #> y)
+        {
+            return x.value >= y.value;
+        }
+
+        public static bool operator <=(in <#= Name #> x, in <#= Name #> y)
+        {
+            return x.value <= y.value;
+        }
 
 <# } #>
 
 <# if (HasFlag(UnitGenerateOptions.JsonConverter)) { #> 
 
+    private class <#= Name #>JsonConverter : JsonConverter<<#= Name #>>
+    {
+        public override void Write(Utf8JsonWriter writer, <#= Name #> value, JsonSerializerOptions options)
+        {
+            var converter = options.GetConverter(typeof(<#= Type #>)) as JsonConverter<<#= Type #>>;
+            if (converter != null)
+            {
+                converter.Write(writer, value.value, options);
+            }
+            else
+            {
+                throw new JsonException($"{typeof(<#= Type #>)} converter does not found.");
+            }
+        }
+        
+        public override <#= Name #> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            var converter = options.GetConverter(typeof(<#= Type #>)) as JsonConverter<<#= Type #>>;
+            if (converter != null)
+            {
+                return new <#= Name #>(converter.Read(ref reader, typeToConvert, options));
+            }
+            else
+            {
+                throw new JsonException($"{typeof(<#= Type #>)} converter does not found.");
+            }
+        }
+    }
 
 <# } #>
 
 <# if (HasFlag(UnitGenerateOptions.MessagePackFormatter)) { #> 
+    
+    private class <#= Name #>MessagePackFormatter : IMessagePackFormatter<<#= Name #>>
+    {
+        public void Serialize(ref MessagePackWriter writer, <#= Name #> value, MessagePackSerializerOptions options)
+        {
+            options.Resolver.GetFormatterWithVerify<<#= Type #>>().Serialize(ref writer, value.value, options);
+        }
 
+        public <#= Name #> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        {
+            return new <#= Name #>(options.Resolver.GetFormatterWithVerify<<#= Type #>>().Deserialize(ref reader, options));
+        }
+    }
 
 <# } #>
 
 <# if (HasFlag(UnitGenerateOptions.DapperTypeHandler)) { #> 
 
+    public class <#= Name #>TypeHandler : Dapper.SqlMapper.TypeHandler<<#= Name #>>
+    {
+        public override <#= Name #> Parse(object value)
+        {
+            return new <#= Name #>((<#= Type #>)value);
+        }
+
+        public override void SetValue(System.Data.IDbDataParameter parameter, <#= Name #> value)
+        {
+            parameter.DbType = System.Data.DbType.<#= GetDbType() #>;
+            parameter.Value = value.value;
+        }
+    }
 
 <# } #>
 
 <# if (HasFlag(UnitGenerateOptions.EntityFrameworkValueConverter)) { #> 
-
+    
+    public class <#= Name #>ValueConverter : Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<<#= Name #>, <#= Type #>>
+    {
+        public <#= Name #>ValueConverter(Microsoft.EntityFrameworkCore.Storage.ValueConversion.ConverterMappingHints mappingHints = null)
+            : base(
+                    convertToProviderExpression: x => x.value,
+                    convertFromProviderExpression: x => new <#= Name #>(x),
+                    mappingHints: mappingHints)
+        {
+        }
+    }
 
 <# } #>
 

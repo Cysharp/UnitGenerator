@@ -26,23 +26,34 @@ namespace UnitGenerator
         public virtual string TransformText()
         {
             this.Write("﻿");
-            this.Write("#pragma warning disable CS8669\r\nusing System;\r\n\r\nnamespace ");
+            this.Write("#pragma warning disable CS8669\r\nusing System;\r\n");
+ if (HasFlag(UnitGenerateOptions.MessagePackFormatter)) { 
+            this.Write(" \r\nusing MessagePack;\r\nusing MessagePack.Formatters;\r\n");
+ } 
+ if (HasFlag(UnitGenerateOptions.JsonConverter)) { 
+            this.Write(" \r\nusing System.Text.Json;\r\nusing System.Text.Json.Serialization;\r\n");
+ } 
+            this.Write("\r\nnamespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Namespace));
             this.Write("\r\n{\r\n");
  if (HasFlag(UnitGenerateOptions.JsonConverter)) { 
-            this.Write(" \r\n\r\n");
+            this.Write(" \r\n    [JsonConverter(typeof(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("JsonConverter))]\r\n");
  } 
  if (HasFlag(UnitGenerateOptions.MessagePackFormatter)) { 
-            this.Write(" \r\n\r\n");
+            this.Write(" \r\n    [MessagePackFormatter(typeof(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("MessagePackFormatter))]\r\n");
  } 
             this.Write("    [System.ComponentModel.TypeConverter(typeof(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("TypeConverter))]\r\n    public readonly partial struct ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" : IEquatable<");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("> ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(HasFlag(UnitGenerateOptions.Comparable) ? $", IComparable<{Type}>" : ""));
+            this.Write(this.ToStringHelper.ToStringWithCulture(HasFlag(UnitGenerateOptions.Comparable) ? $", IComparable<{Name}>" : ""));
             this.Write("\r\n    {\r\n        readonly ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Type));
             this.Write(" value;\r\n\r\n        public readonly ");
@@ -51,8 +62,15 @@ namespace UnitGenerator
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Type));
-            this.Write(" value)\r\n        {\r\n            this.value = value;\r\n        }\r\n\r\n        public " +
-                    "static ");
+            this.Write(" value)\r\n        {\r\n            this.value = value;\r\n");
+ if (HasFlag(UnitGenerateOptions.Validate)) { 
+            this.Write(" \r\n            this.Validate();\r\n");
+ } 
+            this.Write("        }\r\n\r\n");
+ if (HasFlag(UnitGenerateOptions.Validate)) { 
+            this.Write(" \r\n        private partial void Validate();\r\n");
+ } 
+            this.Write("\r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(HasFlag(UnitGenerateOptions.ImplicitOperator) ? "implicit" : "explicit"));
             this.Write(" operator ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Type));
@@ -68,14 +86,15 @@ namespace UnitGenerator
             this.Write(" value)\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("(value);\r\n        }\r\n\r\n        public bool Equals(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" other)\r\n        {\r\n            return value.Equals(other.value);\r\n        }\r\n\r\n " +
+                    "       public override bool Equals(object? obj)\r\n        {\r\n            if (obj " +
+                    "is ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Type));
-            this.Write(@" other)
-        {
-            return this.Equals(other);
-        }
-
-        public override bool Equals(object? obj)
-        {
+            this.Write(@" v)
+            {
+                return Equals(v);
+            }
             return value.Equals(obj);
         }
 
@@ -96,18 +115,32 @@ namespace UnitGenerator
             this.Write(this.ToStringHelper.ToStringWithCulture(ToStringFormat));
             this.Write("\", value);\r\n");
  } 
-            this.Write("        }\r\n\r\n        public static bool operator ==(");
+            this.Write("        }\r\n\r\n        public static bool operator ==(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" x, ");
+            this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" y)\r\n        {\r\n            return x.Equals(y);\r\n        }\r\n\r\n        public stat" +
-                    "ic bool operator !=(");
+            this.Write(" y)\r\n        {\r\n            return x.value == y.value;\r\n        }\r\n\r\n        publ" +
+                    "ic static bool operator !=(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" x, ");
+            this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" y)\r\n        {\r\n            return !x.Equals(y);\r\n        }\r\n\r\n");
+            this.Write(" y)\r\n        {\r\n            return x.value != y.value;\r\n        }\r\n\r\n");
  if (HasFlag(UnitGenerateOptions.ParseMethod)) { 
-            this.Write(" \r\n\r\n\r\n");
+            this.Write(" \r\n\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" Parse(string s)\r\n        {\r\n            return ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(".Parse(s);\r\n        }\r\n        \r\n        public static bool TryParse(string s, ou" +
+                    "t ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" result)\r\n        {\r\n            if(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(".TryParse(s, out var r))\r\n            {\r\n                result = new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("(r);\r\n                return true;\r\n            }\r\n            else\r\n            " +
+                    "{\r\n                result = default(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(");\r\n                return false;\r\n            }\r\n        }\r\n\r\n");
  } 
             this.Write("\r\n");
  if (Type == "bool") { 
@@ -131,33 +164,33 @@ namespace UnitGenerator
  if (HasFlag(UnitGenerateOptions.ArithmeticOperator)) { 
             this.Write(" \r\n\r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" operator +(");
+            this.Write(" operator +(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" x, ");
+            this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" y)\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("(x.value + y.value);\r\n        }\r\n\r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" operator -(");
+            this.Write(" operator -(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" x, ");
+            this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" y)\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("(x.value - y.value);\r\n        }\r\n\r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" operator *(");
+            this.Write(" operator *(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" x, ");
+            this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" y)\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("(x.value * y.value);\r\n        }\r\n\r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" operator /(");
+            this.Write(" operator /(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" x, ");
+            this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" y)\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
@@ -167,33 +200,45 @@ namespace UnitGenerator
  if (HasFlag(UnitGenerateOptions.ValueArithmeticOperator)) { 
             this.Write(" \r\n\r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" operator +(");
+            this.Write(" operator ++(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" x, ");
+            this.Write(" x)\r\n        {\r\n            return new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("(x.value + 1);\r\n        }\r\n\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" operator --(in ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" x)\r\n        {\r\n            return new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("(x.value - 1);\r\n        }\r\n\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" operator +(in ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Type));
             this.Write(" y)\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("(x.value + y);\r\n        }\r\n\r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" operator -(");
+            this.Write(" operator -(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" x, ");
+            this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Type));
             this.Write(" y)\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("(x.value - y);\r\n        }\r\n\r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" operator *(");
+            this.Write(" operator *(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" x, ");
+            this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Type));
             this.Write(" y)\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("(x.value * y);\r\n        }\r\n\r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" operator /(");
+            this.Write(" operator /(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" x, ");
+            this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Type));
             this.Write(" y)\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
@@ -203,23 +248,118 @@ namespace UnitGenerator
  if (HasFlag(UnitGenerateOptions.Comparable)) { 
             this.Write(" \r\n\r\n        public int CompareTo(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" other)\r\n        {\r\n            return value.CompareTo(other);\r\n        }\r\n\r\n");
+            this.Write(" other)\r\n        {\r\n            return value.CompareTo(other);\r\n        }\r\n      " +
+                    "  \r\n        public static bool operator >(in ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" x, in ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" y)\r\n        {\r\n            return x.value > y.value;\r\n        }\r\n\r\n        publi" +
+                    "c static bool operator <(in ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" x, in ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" y)\r\n        {\r\n            return x.value < y.value;\r\n        }\r\n\r\n        publi" +
+                    "c static bool operator >=(in ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" x, in ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" y)\r\n        {\r\n            return x.value >= y.value;\r\n        }\r\n\r\n        publ" +
+                    "ic static bool operator <=(in ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" x, in ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" y)\r\n        {\r\n            return x.value <= y.value;\r\n        }\r\n\r\n");
  } 
             this.Write("\r\n");
  if (HasFlag(UnitGenerateOptions.JsonConverter)) { 
-            this.Write(" \r\n\r\n\r\n");
+            this.Write(" \r\n\r\n    private class ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("JsonConverter : JsonConverter<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(">\r\n    {\r\n        public override void Write(Utf8JsonWriter writer, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" value, JsonSerializerOptions options)\r\n        {\r\n            var converter = op" +
+                    "tions.GetConverter(typeof(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(")) as JsonConverter<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(">;\r\n            if (converter != null)\r\n            {\r\n                converter." +
+                    "Write(writer, value.value, options);\r\n            }\r\n            else\r\n         " +
+                    "   {\r\n                throw new JsonException($\"{typeof(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(")} converter does not found.\");\r\n            }\r\n        }\r\n        \r\n        publ" +
+                    "ic override ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions option" +
+                    "s)\r\n        {\r\n            var converter = options.GetConverter(typeof(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(")) as JsonConverter<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(">;\r\n            if (converter != null)\r\n            {\r\n                return new" +
+                    " ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("(converter.Read(ref reader, typeToConvert, options));\r\n            }\r\n           " +
+                    " else\r\n            {\r\n                throw new JsonException($\"{typeof(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(")} converter does not found.\");\r\n            }\r\n        }\r\n    }\r\n\r\n");
  } 
             this.Write("\r\n");
  if (HasFlag(UnitGenerateOptions.MessagePackFormatter)) { 
-            this.Write(" \r\n\r\n\r\n");
+            this.Write(" \r\n    \r\n    private class ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("MessagePackFormatter : IMessagePackFormatter<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(">\r\n    {\r\n        public void Serialize(ref MessagePackWriter writer, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" value, MessagePackSerializerOptions options)\r\n        {\r\n            options.Res" +
+                    "olver.GetFormatterWithVerify<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(">().Serialize(ref writer, value.value, options);\r\n        }\r\n\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)\r" +
+                    "\n        {\r\n            return new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("(options.Resolver.GetFormatterWithVerify<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(">().Deserialize(ref reader, options));\r\n        }\r\n    }\r\n\r\n");
  } 
             this.Write("\r\n");
  if (HasFlag(UnitGenerateOptions.DapperTypeHandler)) { 
-            this.Write(" \r\n\r\n\r\n");
+            this.Write(" \r\n\r\n    public class ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("TypeHandler : Dapper.SqlMapper.TypeHandler<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(">\r\n    {\r\n        public override ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" Parse(object value)\r\n        {\r\n            return new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("((");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(")value);\r\n        }\r\n\r\n        public override void SetValue(System.Data.IDbDataP" +
+                    "arameter parameter, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" value)\r\n        {\r\n            parameter.DbType = System.Data.DbType.");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetDbType()));
+            this.Write(";\r\n            parameter.Value = value.value;\r\n        }\r\n    }\r\n\r\n");
  } 
             this.Write("\r\n");
  if (HasFlag(UnitGenerateOptions.EntityFrameworkValueConverter)) { 
-            this.Write(" \r\n\r\n\r\n");
+            this.Write(" \r\n    \r\n    public class ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("ValueConverter : Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConve" +
+                    "rter<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Type));
+            this.Write(">\r\n    {\r\n        public ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(@"ValueConverter(Microsoft.EntityFrameworkCore.Storage.ValueConversion.ConverterMappingHints mappingHints = null)
+            : base(
+                    convertToProviderExpression: x => x.value,
+                    convertFromProviderExpression: x => new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("(x),\r\n                    mappingHints: mappingHints)\r\n        {\r\n        }\r\n    " +
+                    "}\r\n\r\n");
  } 
             this.Write("\r\n        private class ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));

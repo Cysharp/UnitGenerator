@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Data;
 
 namespace UnitGenerator
 {
@@ -15,6 +13,32 @@ namespace UnitGenerator
         internal bool HasFlag(UnitGenerateOptions options)
         {
             return Options.HasFlag(options);
+        }
+
+        internal DbType GetDbType()
+        {
+            return Type switch
+            {
+                "short" => DbType.Int16,
+                "int" => DbType.Int32,
+                "long" => DbType.Int64,
+                "ushort" => DbType.UInt16,
+                "uint" => DbType.UInt32,
+                "ulong" => DbType.UInt64,
+                "string" => DbType.AnsiString,
+                "byte[]" => DbType.Binary,
+                "bool" => DbType.Boolean,
+                "byte" => DbType.Byte,
+                "sbyte" => DbType.SByte,
+                "float" => DbType.Single,
+                "double" => DbType.Double,
+                "DateTime" => DbType.DateTime,
+                "DateTimeOffset" => DbType.DateTimeOffset,
+                "TimeSpan" => DbType.Time,
+                "Guid" => DbType.Guid,
+                "decimal" => DbType.Currency,
+                _ => DbType.Object
+            };
         }
     }
 }

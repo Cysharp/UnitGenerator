@@ -1,9 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace UnitGenerator
 {
@@ -13,10 +15,10 @@ namespace UnitGenerator
         public void Initialize(GeneratorInitializationContext context)
         {
 #if DEBUG
-            //if (!System.Diagnostics.Debugger.IsAttached)
-            //{
-            //    System.Diagnostics.Debugger.Launch();
-            //}
+            if (!System.Diagnostics.Debugger.IsAttached)
+            {
+                // System.Diagnostics.Debugger.Launch();
+            }
 #endif 
 
             context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
@@ -28,75 +30,78 @@ namespace UnitGenerator
             var attrCode = new UnitOfAttributeTemplate().TransformText();
             context.AddSource("UnitOfAttribute.cs", attrCode);
 
-            var receiver = context.SyntaxReceiver as SyntaxReceiver;
-            if (receiver == null) return;
-
-            var list = new List<(StructDeclarationSyntax, UnitOfAttributeProperty)>();
-            foreach (var (type, attr) in receiver.Targets)
+            try
             {
-                if (attr.ArgumentList is null) continue;
+                var receiver = context.SyntaxReceiver as SyntaxReceiver;
+                if (receiver == null) return;
 
-                var model = context.Compilation.GetSemanticModel(type.SyntaxTree);
-
-                // retrieve attribute parameter
-                var prop = new UnitOfAttributeProperty();
+                var list = new List<(StructDeclarationSyntax, UnitOfAttributeProperty)>();
+                foreach (var (type, attr) in receiver.Targets)
                 {
-                    var arg = attr.ArgumentList.Arguments[0];
-                    var expr = arg.Expression;
-                    if (expr is TypeOfExpressionSyntax typeOfExpr) // Type type
+                    if (attr.ArgumentList is null) continue;
+
+                    var model = context.Compilation.GetSemanticModel(type.SyntaxTree);
+
+                    // retrieve attribute parameter
+                    var prop = new UnitOfAttributeProperty();
+
+                    if (attr.ArgumentList is null) goto ADD;
+                    for (int i = 0; i < attr.ArgumentList.Arguments.Count; i++)
                     {
-                        var typeSymbol = model.GetSymbolInfo(typeOfExpr.Type).Symbol as ITypeSymbol;
-                        if (typeSymbol == null) throw new Exception("require type-symbol.");
-                        prop.Type = typeSymbol;
+                        var arg = attr.ArgumentList.Arguments[i];
+                        var expr = arg.Expression;
+
+                        if (i == 0) // Type type
+                        {
+                            if (expr is TypeOfExpressionSyntax typeOfExpr)
+                            {
+                                var typeSymbol = model.GetSymbolInfo(typeOfExpr.Type).Symbol as ITypeSymbol;
+                                if (typeSymbol == null) throw new Exception("require type-symbol.");
+                                prop.Type = typeSymbol;
+                            }
+                            else
+                            {
+                                throw new Exception("require UnitOf attribute and ctor.");
+                            }
+                        }
+                        else if (i == 1) // UnitGenerateOptions options
+                        {
+                            // e.g. UnitGenerateOptions.ImplicitOperator | UnitGenerateOptions.ParseMethod => ImplicitOperatior, ParseMethod
+                            var parsed = Enum.Parse(typeof(UnitGenerateOptions), expr.ToString().Replace("UnitGenerateOptions.", "").Replace("|", ","));
+                            prop.Options = (UnitGenerateOptions)parsed;
+                        }
+                        else if (i == 2) // string toStringFormat
+                        {
+                            var format = model.GetConstantValue(expr).Value?.ToString();
+                            prop.ToStringFormat = format;
+                        }
                     }
-                    else
+
+                    ADD:
+                    list.Add((type, prop));
+                }
+
+                foreach (var (type, prop) in list)
+                {
+                    var typeSymbol = context.Compilation.GetSemanticModel(type.SyntaxTree).GetDeclaredSymbol(type);
+                    if (typeSymbol == null) throw new Exception("can not get typeSymbol.");
+
+                    var template = new CodeTemplate()
                     {
-                        throw new Exception("require UnitOf attribute and ctor.");
-                    }
-                }
-                // Option1: GenerateFlags
-                var generateFlagsAttr = type.AttributeLists.SelectMany(x => x.Attributes).FirstOrDefault(x => x.Name.ToString() is "GenerateFlags" or "GenerateFlagsAttribute");
-                if (generateFlagsAttr != null)
-                {
-                    if (generateFlagsAttr.ArgumentList is null) goto ADD;
-                    var arg = generateFlagsAttr.ArgumentList.Arguments[0];
-                    var expr = arg.Expression;
+                        Name = typeSymbol.Name,
+                        Namespace = typeSymbol.ContainingNamespace.Name,
+                        Type = prop.Type.ToString(),
+                        Options = prop.Options,
+                        ToStringFormat = prop.ToStringFormat
+                    };
 
-                    // e.g. UnitGenerateOptions.ImplicitOperator | UnitGenerateOptions.ParseMethod => ImplicitOperatior, ParseMethod
-                    var parsed = Enum.Parse(typeof(UnitGenerateOptions), expr.ToString().Replace("UnitGenerateOptions.", "").Replace("|", ","));
-                    prop.Options = (UnitGenerateOptions)parsed;
+                    var text = template.TransformText();
+                    context.AddSource($"{template.Namespace}.{template.Name}.Generated.cs", text);
                 }
-                // Option1: ToStringFormat
-                var toStringAttr = type.AttributeLists.SelectMany(x => x.Attributes).FirstOrDefault(x => x.Name.ToString() is "ToStringFormat" or "ToStringFormatAttribute");
-                if (toStringAttr != null)
-                {
-                    if (toStringAttr.ArgumentList is null) goto ADD;
-                    var arg = toStringAttr.ArgumentList.Arguments[0];
-                    var expr = arg.Expression;
-                    var format = model.GetConstantValue(expr).Value?.ToString();
-                    prop.ToStringFormat = format;
-                }
-
-                ADD:
-                list.Add((type, prop));
             }
-
-            foreach (var (type, prop) in list)
+            catch (Exception ex)
             {
-                var typeSymbol = context.Compilation.GetSemanticModel(type.SyntaxTree).GetDeclaredSymbol(type);
-                if (typeSymbol == null) throw new Exception("can not get typeSymbol.");
-
-                var template = new CodeTemplate()
-                {
-                    Name = typeSymbol.Name,
-                    Namespace = typeSymbol.ContainingNamespace.Name,
-                    Type = prop.Type.ToString(),
-                    Options = prop.Options,
-                    ToStringFormat = prop.ToStringFormat
-                };
-
-                var text = template.TransformText();
-                context.AddSource($"{template.Namespace}.{template.Name}.Generated.cs", text);
+                System.Diagnostics.Trace.WriteLine(ex.ToString());
             }
         }
 

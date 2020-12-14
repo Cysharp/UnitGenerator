@@ -13,32 +13,14 @@ namespace UnitGenerator
     internal class UnitOfAttribute : Attribute
     {
         public Type Type { get; }
-
-        public UnitOfAttribute(Type type)
-        {
-            this.Type = type;
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
-    internal class GenerateFlagsAttribute : Attribute
-    {
         public UnitGenerateOptions Options { get; }
-
-        public GenerateFlagsAttribute(UnitGenerateOptions options)
-        {
-            this.Options = options;
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
-    internal class ToStringFormatAttribute : Attribute
-    {
         public string Format { get; }
 
-        public ToStringFormatAttribute(string format)
+        public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None, string toStringFormat = null)
         {
-            this.Format = format;
+            this.Type = type;
+            this.Options = options;
+            this.Format = toStringFormat;
         }
     }
 
@@ -51,9 +33,13 @@ namespace UnitGenerator
         ArithmeticOperator = 4,
         ValueArithmeticOperator = 8,
         Comparable = 16,
-        JsonConverter = 32,
-        MessagePackFormatter = 64,
-        DapperTypeHandler = 128,
-        EntityFrameworkValueConverter = 256,
+        Validate = 32,
+        JsonConverter = 64,
+        MessagePackFormatter = 128,
+        DapperTypeHandler = 256,
+        EntityFrameworkValueConverter = 512,
+
+        CalculationType = ArithmeticOperator | ValueArithmeticOperator | Comparable,
+        All = ImplicitOperator | ParseMethod | ArithmeticOperator | ValueArithmeticOperator | Comparable | Validate | JsonConverter | MessagePackFormatter | DapperTypeHandler | EntityFrameworkValueConverter,
     }
 }

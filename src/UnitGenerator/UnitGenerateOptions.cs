@@ -2,7 +2,7 @@
 
 namespace UnitGenerator
 {
-    // same as Generated Options.
+    // same as Generated Options(check UnitOfAttributeTemplate.tt).
     [Flags]
     internal enum UnitGenerateOptions
     {
@@ -12,9 +12,13 @@ namespace UnitGenerator
         ArithmeticOperator = 4,
         ValueArithmeticOperator = 8,
         Comparable = 16,
-        JsonConverter = 32,
-        MessagePackFormatter = 64,
-        DapperTypeHandler = 128,
-        EntityFrameworkValueConverter = 256,
+        Validate = 32,
+        JsonConverter = 64,
+        MessagePackFormatter = 128,
+        DapperTypeHandler = 256,
+        EntityFrameworkValueConverter = 512,
+
+        CalculationType = ArithmeticOperator | ValueArithmeticOperator | Comparable,
+        All = ImplicitOperator | ParseMethod | ArithmeticOperator | ValueArithmeticOperator | Comparable | Validate | JsonConverter | MessagePackFormatter | DapperTypeHandler | EntityFrameworkValueConverter,
     }
 }

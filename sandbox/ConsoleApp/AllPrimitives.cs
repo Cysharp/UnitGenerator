@@ -7,7 +7,7 @@ using UnitGenerator;
 
 namespace ConsoleApp
 {
-    [UnitOf(typeof(int), UnitGenerateOptions.All)]
+    [UnitOf(typeof(int), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct A
     {
         private partial void Validate()
@@ -16,7 +16,7 @@ namespace ConsoleApp
         }
     }
 
-    [UnitOf(typeof(uint), UnitGenerateOptions.All)]
+    [UnitOf(typeof(uint), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct B
     {
         private partial void Validate()
@@ -25,7 +25,7 @@ namespace ConsoleApp
         }
     }
 
-    [UnitOf(typeof(short), UnitGenerateOptions.All)]
+    [UnitOf(typeof(short), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct C
     {
         private partial void Validate()
@@ -34,7 +34,7 @@ namespace ConsoleApp
         }
     }
 
-    [UnitOf(typeof(ushort), UnitGenerateOptions.All)]
+    [UnitOf(typeof(ushort), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct D
     {
         private partial void Validate()
@@ -43,7 +43,7 @@ namespace ConsoleApp
         }
     }
 
-    [UnitOf(typeof(byte), UnitGenerateOptions.All)]
+    [UnitOf(typeof(byte), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct E
     {
         private partial void Validate()
@@ -52,7 +52,7 @@ namespace ConsoleApp
         }
     }
 
-    [UnitOf(typeof(sbyte), UnitGenerateOptions.All)]
+    [UnitOf(typeof(sbyte), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct F
     {
         private partial void Validate()
@@ -61,7 +61,7 @@ namespace ConsoleApp
         }
     }
 
-    [UnitOf(typeof(float), UnitGenerateOptions.All)]
+    [UnitOf(typeof(float), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct G
     {
         private partial void Validate()
@@ -70,7 +70,7 @@ namespace ConsoleApp
         }
     }
 
-    [UnitOf(typeof(double), UnitGenerateOptions.All)]
+    [UnitOf(typeof(double), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct H
     {
         private partial void Validate()
@@ -79,7 +79,7 @@ namespace ConsoleApp
         }
     }
 
-    [UnitOf(typeof(decimal), UnitGenerateOptions.All)]
+    [UnitOf(typeof(decimal), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct I
     {
         private partial void Validate()
@@ -88,7 +88,7 @@ namespace ConsoleApp
         }
     }
 
-    [UnitOf(typeof(float), UnitGenerateOptions.All)]
+    [UnitOf(typeof(float), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct J
     {
         private partial void Validate()

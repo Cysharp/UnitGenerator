@@ -9,7 +9,7 @@
 
 		<!-- NuGet -->
 		<PackageId>UnitGenerator</PackageId>
-		<Description>C# Source Generator to create ValueObject, inspired by units of measure.</Description>
+		<Description>C# Source Generator to create value-object, inspired by units of measure.</Description>
 
 		<PackageVersion>$(Version)</PackageVersion>
 		<Company>Cysharp</Company>

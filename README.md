@@ -436,7 +436,7 @@ C# Source Generator feature is rely on C# 9.0. Currently Unity(2020) does not su
 dotnet build UnitSourceGen.csproj
 ```
 
-File will be generated under `UnitGenerator\UnitGenerator.SourceGenerator\*.Generated.cs`.
+File will be generated under `UnitGenerator\UnitGenerator.SourceGenerator\*.Generated.cs`. `UnitOfAttribute` is also included in generated folder, so at first, run build command and get attribute to configure.
 
 License
 ---

@@ -23,12 +23,38 @@ namespace Sample
 
     [UnitOf(typeof(int), UnitGenerateOptions.MessagePackFormatter)]
     public readonly partial struct UserId { }
+
+
+    [UnitOf(typeof(int), UnitGenerateOptions.Validate)]
+    public readonly partial struct SampleValidate
+    {
+        // impl here.
+        private partial void Validate()
+        {
+            if (value > 9999) throw new Exception("Invalid value range: " + value);
+        }
+    }
+
+    [UnitOf(typeof(int), UnitGenerateOptions.MessagePackFormatter)]
+    public readonly partial struct UserId2 
+    {
+        public void Foo()
+        {
+            
+
+            _ = AsPrimitive();
+        }
+    }
+
 }
 
 
 namespace ConsoleApp
 {
 
+
+    [UnitOf(typeof((string street, string city)))]
+    public readonly partial struct StreetAddress { }
 
     class Program
     {
@@ -38,11 +64,14 @@ namespace ConsoleApp
 
         static void Main(string[] args)
         {
-            var a = default(UserId);
+            new SampleValidate(99999);
 
-            a.AsPrimitive();
+
+            default(StreetAddress).AsPrimitive();
+
         }
     }
+
 }
 
 

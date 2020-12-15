@@ -43,8 +43,8 @@ public readonly partial struct UserId : IEquatable<UserId>
     public override bool Equals(object? obj) => // snip...
     public override int GetHashCode() => value.GetHashCode();
     public override string ToString() => "UserId(" + value + ")";
-    public static bool operator ==(in UserId x, in UserId y) => x.value == y.value;
-    public static bool operator !=(in UserId x, in UserId y) => x.value != y.value;
+    public static bool operator ==(in UserId x, in UserId y) => x.value.Equals(y.value);
+    public static bool operator !=(in UserId x, in UserId y) => !x.value.Equals(y.value);
 
     private class UserIdTypeConverter : System.ComponentModel.TypeConverter
     {
@@ -78,8 +78,8 @@ public readonly partial struct Hp : IEquatable<Hp> , IComparable<Hp>
     public override bool Equals(object? obj) => // snip...
     public override int GetHashCode() => value.GetHashCode();
     public override string ToString() => "Hp(" + value + ")";
-    public static bool operator ==(in Hp x, in Hp y) => x.value == y.value;
-    public static bool operator !=(in Hp x, in Hp y) => x.value != y.value;
+    public static bool operator ==(in Hp x, in Hp y) => x.value.Equals(y.value);
+    public static bool operator !=(in Hp x, in Hp y) => !x.value.Equals(y.value);
     private class HpTypeConverter : System.ComponentModel.TypeConverter { /* snip... */ }
 
     // UnitGenerateOptions.ArithmeticOperator
@@ -132,7 +132,7 @@ enum UnitGenerateOptions
 
 UnitGenerateOptions has some serializer support. For example, a result like `Serialize(userId) => { Value = 1111 }` is awful. The value-object should be serialized natively, i.e. `Serialzie(useId) => 1111`, and should be able to be added directly to a database, etc.
 
-Currently UnitGenerator supports [MessagePack for C#](https://github.com/neuecc/MessagePack-CSharp), System.Text.Json, [Dapper](https://github.com/StackExchange/Dapper) and EntityFrameworkCore.
+Currently UnitGenerator supports [MessagePack for C#](https://github.com/neuecc/MessagePack-CSharp), System.Text.Json(JsonSerializer), [Dapper](https://github.com/StackExchange/Dapper) and EntityFrameworkCore.
 
 ```csharp
 [UnitOf(typeof(int), UnitGenerateOptions.MessagePackFormatter)]
@@ -181,25 +181,257 @@ public readonly partial struct UserId
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## UnitOfAttribute
-TODO:
+When referring to the UnitGenerator, it generates a internal `UnitOfAttribute`.
+
+```csharp
+namespace UnitGenerator
+{
+    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
+    internal class UnitOfAttribute : Attribute
+    {
+        public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None, string toStringFormat = null)
+    }
+}
+```
+
+You can attach this attribute with any specified underlying type to `readonly partial struct`.
+
+```csharp
+[UnitOf(typeof(Guid))]
+public readonly partial struct GroupId { }
+
+[UnitOf(typeof(string))]
+public readonly partial struct Message { }
+
+[UnitOf(typeof(long))]
+public readonly partial struct Power { }
+
+[UnitOf(typeof(byte[]))]
+public readonly partial struct Image { }
+
+[UnitOf(typeof(DateTime))]
+public readonly partial struct StartDate { }
+
+[UnitOf(typeof((string street, string city)))]
+public readonly partial struct StreetAddress { }
+```
+
+Standard UnitOf(`UnitGenerateOptions.None`) generates value constructor, `explicit operator`, `implement IEquatable<T>`, `override GetHashCode`, `override ToString`, `==` and `!=` operator, `TypeConverter` for ASP.NET Core binding, `AsPrimitive` method.
+
+If you want to retrieve primitive value, use `AsPrimitive()` instead of `.Value`. This is intended to avoid casual getting of primitive values (using the arithmetic operator option if available).
+
+Second parameter `UnitGenerateOptions options` can configure which method to implement, default is `None`.
+
+Third parameter `strign toStringFormat` can configure `ToString` format. Default is null and output as $`TypeName({0})`.
 
 ## UnitGenerateOptions
-TODO:
+
+When referring to the UnitGenerator, it generates a internal `UnitGenerateOptions` that is bit flag of which method to implement.
+
+```csharp
+[Flags]
+internal enum UnitGenerateOptions
+{
+    None = 0,
+    ImplicitOperator = 1,
+    ParseMethod = 2,
+    MinMaxMethod = 4,
+    ArithmeticOperator = 8,
+    ValueArithmeticOperator = 16,
+    Comparable = 32,
+    Validate = 64,
+    JsonConverter = 128,
+    MessagePackFormatter = 256,
+    DapperTypeHandler = 512,
+    EntityFrameworkValueConverter = 1024,
+}
+```
+
+You can use this with `[UnitOf]`.
+
+```csharp
+[UnitOf(typeof(int), UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.MinMaxMethod)]
+public readonly partial struct Strength { }
+
+[UnitOf(typeof(DateTime), UnitGenerateOptions.Validate | UnitGenerateOptions.ParseMethod | UnitGenerateOptions.Comparable)]
+public readonly partial struct EndDate { }
+
+[UnitOf(typeof(double), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
+public readonly partial struct AllOptionsStruct { }
+```
+
+> Currently UnitGenerateOptions only supports to use directly. For example, `[UnitOf(typeof(int)), MyConstants.MyOptions]` is invalid.
 
 ### ImplicitOperator
+
+```csharp
+// Default
+public static explicit operator U(T value) => value.value;
+public static explicit operator T(U value) => new T(value);
+
+// UnitGenerateOptions.ImplicitOperator
+public static implicit operator U(T value) => value.value;
+public static implicit operator T(U value) => new T(value);
+```
+
 ### ParseMethod 
+
+```csharp
+public static T Parse(string s)
+public static bool TryParse(string s, out T result)
+```
+
 ### MinMaxMethod
+
+```csharp
+public static T Min(T x, T y)
+public static T Max(T x, T y)
+```
+
 ### ArithmeticOperator
+
+```csharp
+public static T operator +(in T x, in T y) => new T(checked((U)(x.value + y.value)));
+public static T operator -(in T x, in T y) => new T(checked((U)(x.value - y.value)));
+public static T operator *(in T x, in T y) => new T(checked((U)(x.value * y.value)));
+public static T operator /(in T x, in T y) => new T(checked((U)(x.value / y.value)));
+```
+
 ### ValueArithmeticOperator
+
+```csharp
+public static T operator ++(in T x) => new T(checked((U)(x.value + 1)));
+public static T operator --(in T x) => new T(checked((U)(x.value - 1)));
+public static T operator +(in T x, in U y) => new T(checked((U)(x.value + y)));
+public static T operator -(in T x, in U y) => new T(checked((U)(x.value - y)));
+public static T operator *(in T x, in U y) => new T(checked((U)(x.value * y)));
+public static T operator /(in T x, in U y) => new T(checked((U)(x.value / y)));
+```
+
 ### Comparable
+
+Implements `IComparable<T>` and `>`, `<`, `>=`, `<=` operators.
+
+```
+public U CompareTo(T other) => value.CompareTo(other);
+public static bool operator >(in T x, in T y) => x.value > y.value;
+public static bool operator <(in T x, in T y) => x.value < y.value;
+public static bool operator >=(in T x, in T y) => x.value >= y.value;
+public static bool operator <=(in T x, in T y) => x.value <= y.value;
+```
+
 ### Validate
+
+Implements `partial void Validate()` method that is called on constructor.
+
+```csharp
+// You can implement this custom validate method.
+[UnitOf(typeof(int), UnitGenerateOptions.Validate)]
+public readonly partial struct SampleValidate
+{
+    // impl here.
+    private partial void Validate()
+    {
+        if (value > 9999) throw new Exception("Invalid value range: " + value);
+    }
+}
+
+// Source generator generate this codes.
+public T(int value)
+{
+    this.value = value;
+    this.Validate();
+}
+ 
+private partial void Validate();
+```
+
 ### JsonConverter
+
+Implements `System.Text.Json`'s `JsonConverter`. It will be used `JsonSerializer` automatically.
+
+```csharp
+[JsonConverter(typeof(UserIdJsonConverter))]
+public readonly partial struct UserId
+{
+    class UserIdJsonConverter : JsonConverter<UserId>
+}
+```
+
 ### MessagePackFormatter
+
+Implements MessagePack for C#'s `MessagePackFormatter`. It will be used `MessagePackSerializer` automatically.
+
+```csharp
+[MessagePackFormatter(typeof(UserIdMessagePackFormatter))]
+public readonly partial struct UserId
+{
+    class UserIdMessagePackFormatter : IMessagePackFormatter<UserId>
+}
+```
+
 ### DapperTypeHandler
+
+Implements Dapper's TypeHandler by public accessibility. It is not registered automatically so you need to register manually.
+
+```csharp
+public readonly partial struct UserId
+{
+    public class UserIdTypeHandler : Dapper.SqlMapper.TypeHandler<UserId>
+}
+
+// setup handler manually
+Dapper.SqlMapper.AddTypeHandler(new UserId.UserIdTypeHandler());
+```
+
 ### EntityFrameworkValueConverter
 
+Implements EntityFrameworkCore's ValueConverter by public accessibility. It is not registered automatically so you need to register manually.
+
+```csharp
+public readonly partial struct UserId
+{
+    public class UserIdValueConverter : ValueConverter<UserId, int>
+}
+
+// setup handler manually
+builder.HasConversion(new UserId.UserIdValueConverter());
+```
+
 ## Use for Unity
-TODO:
+
+C# Source Generator feature is rely on C# 9.0. Currently Unity(2020) does not support C# 9.0 so can not use directly. However, C# Source Genertor supports output source as file.
+
+1. Create `UnitSourceGen.csproj`.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+
+        <!-- add this two lines and configure output path -->
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>$(ProjectDir)..\Generated</CompilerGeneratedFilesOutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+        <!-- reference UnitGenerator -->
+        <PackageReference Include="UnitGenerator" Version="1.0.0" />
+
+        <!-- add target sources path from Unity -->
+        <Compile Include="..\MyUnity\Assets\Scripts\Models\**\*.cs" />
+	</ItemGroup>
+</Project>
+```
+
+2. install [.NET SDK](https://dotnet.microsoft.com/download) and run this command.
+
+```
+dotnet build UnitSourceGen.csproj
+```
+
+File will be generated under `UnitGenerator\UnitGenerator.SourceGenerator\*.Generated.cs`.
 
 License
 ---

@@ -61,16 +61,19 @@ namespace <#= Namespace #>
             return value.Equals(other.value);
         }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
-            if (obj is <#= Name #> v)
+            if (obj == null) return false;
+            var t = obj.GetType();
+            if (t == typeof(<#= Name #>))
             {
-                return Equals(v);
+                return Equals((<#= Name #>)obj);
             }
-            if (obj is <#= Type #> v2)
+            if (t == typeof(<#= Type #>))
             {
-                return value.Equals(v2);
+                return value.Equals((<#= Type #>)obj);
             }
+
             return value.Equals(obj);
         }
 
@@ -90,12 +93,12 @@ namespace <#= Namespace #>
 
         public static bool operator ==(in <#= Name #> x, in <#= Name #> y)
         {
-            return x.value == y.value;
+            return x.value.Equals(y.value);
         }
 
         public static bool operator !=(in <#= Name #> x, in <#= Name #> y)
         {
-            return x.value != y.value;
+            return !x.value.Equals(y.value);
         }
 
 <# if (HasFlag(UnitGenerateOptions.ParseMethod)) { #> 
@@ -387,14 +390,17 @@ namespace <#= Namespace #>
 
             public override object ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
             {
-                if (value is <#= Type #> underlyingValue)
+                if (value != null)
                 {
-                    return new <#= Name #>(underlyingValue);
-                }
-                
-                if (value is <#= Name #> wrapperValue)
-                {
-                    return wrapperValue;
+                    var t = value.GetType();
+                    if (t == typeof(<#= Name #>))
+                    {
+                        return (<#= Name #>)value;
+                    }
+                    if (t == typeof(<#= Type #>))
+                    {
+                        return new <#= Name #>((<#= Type #>)value);
+                    }
                 }
 
                 return base.ConvertFrom(context, culture, value);

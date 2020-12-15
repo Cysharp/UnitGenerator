@@ -4,8 +4,6 @@ UnitGenerator
 
 C# Source Generator to create [Value object](https://en.wikipedia.org/wiki/Value_object) pattern, also inspired by [units of measure](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/units-of-measure) to support all arithmetic operators and serialization.
 
-[📖 Table of contents](#-table-of-contents)
-
 NuGet: [UnitGenerator](https://www.nuget.org/packages/UnitGenerator)
 
 ```
@@ -406,22 +404,21 @@ C# Source Generator feature is rely on C# 9.0. Currently Unity(2020) does not su
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
-
-	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
 
         <!-- add this two lines and configure output path -->
-		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-		<CompilerGeneratedFilesOutputPath>$(ProjectDir)..\Generated</CompilerGeneratedFilesOutputPath>
-	</PropertyGroup>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>$(ProjectDir)..\Generated</CompilerGeneratedFilesOutputPath>
+    </PropertyGroup>
 
-	<ItemGroup>
+    <ItemGroup>
         <!-- reference UnitGenerator -->
         <PackageReference Include="UnitGenerator" Version="1.0.0" />
 
         <!-- add target sources path from Unity -->
         <Compile Include="..\MyUnity\Assets\Scripts\Models\**\*.cs" />
-	</ItemGroup>
+    </ItemGroup>
 </Project>
 ```
 

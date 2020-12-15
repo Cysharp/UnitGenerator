@@ -218,6 +218,14 @@ Standard UnitOf(`UnitGenerateOptions.None`) generates value constructor, `explic
 
 If you want to retrieve primitive value, use `AsPrimitive()` instead of `.Value`. This is intended to avoid casual getting of primitive values (using the arithmetic operator option if available).
 
+> When type is bool, also implements `true`, `false`, `!` operators.
+
+```csharp 
+public static bool operator true(Foo x) => x.value;
+public static bool operator false(Foo x) => !x.value;
+public static bool operator !(Foo x) => !x.value;
+```
+
 Second parameter `UnitGenerateOptions options` can configure which method to implement, default is `None`.
 
 Third parameter `strign toStringFormat` can configure `ToString` format. Default is null and output as $`TypeName({0})`.

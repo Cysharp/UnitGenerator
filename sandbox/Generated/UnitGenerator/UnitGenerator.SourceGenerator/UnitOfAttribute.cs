@@ -38,6 +38,4 @@ namespace UnitGenerator
         DapperTypeHandler = 512,
         EntityFrameworkValueConverter = 1024,
     }
-}tor | ValueArithmeticOperator | Comparable | Validate | JsonConverter | MessagePackFormatter | DapperTypeHandler | EntityFrameworkValueConverter,
-    }
 }

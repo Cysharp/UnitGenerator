@@ -60,7 +60,7 @@ namespace UnitGenerator
             this.Write(this.ToStringHelper.ToStringWithCulture(HasFlag(UnitGenerateOptions.Comparable) ? $", IComparable<{Name}>" : ""));
             this.Write("\r\n    {\r\n        readonly ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Type));
-            this.Write(" value;\r\n\r\n        public readonly ");
+            this.Write(" value;\r\n\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Type));
             this.Write(" AsPrimitive() => value;\r\n\r\n        public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));

@@ -11,7 +11,7 @@ namespace FileGenerate
     {
         readonly string value;
 
-        public readonly string AsPrimitive() => value;
+        public string AsPrimitive() => value;
 
         public B(string value)
         {
@@ -142,4 +142,6 @@ namespace FileGenerate
             }
         }
     }
+}
+   }
 }

@@ -69,7 +69,7 @@ public readonly partial struct Hp : IEquatable<Hp> , IComparable<Hp>
         this.value = value;
     }
 
-    public readonly int AsPrimitive() => value;
+    public int AsPrimitive() => value;
     public static explicit operator int(Hp value) => value.value;
     public static explicit operator Hp(int value) => new Hp(value);
     public bool Equals(Hp other) => value.Equals(other.value);

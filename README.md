@@ -318,7 +318,7 @@ public static T operator /(in T x, in U y) => new T(checked((U)(x.value / y)));
 
 Implements `IComparable<T>` and `>`, `<`, `>=`, `<=` operators.
 
-```
+```csharp
 public U CompareTo(T other) => value.CompareTo(other);
 public static bool operator >(in T x, in T y) => x.value > y.value;
 public static bool operator <(in T x, in T y) => x.value < y.value;

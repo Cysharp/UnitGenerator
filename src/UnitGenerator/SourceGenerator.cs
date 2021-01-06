@@ -89,7 +89,7 @@ namespace UnitGenerator
                     var template = new CodeTemplate()
                     {
                         Name = typeSymbol.Name,
-                        Namespace = typeSymbol.ContainingNamespace.Name,
+                        Namespace = typeSymbol.ContainingNamespace.ToDisplayString(),
                         Type = prop.Type.ToString(),
                         Options = prop.Options,
                         ToStringFormat = prop.ToStringFormat

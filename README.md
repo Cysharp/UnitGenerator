@@ -95,7 +95,7 @@ public readonly partial struct Hp : IEquatable<Hp> , IComparable<Hp>
     public static Hp operator /(in Hp x, in int y) => new Hp(checked((int)(x.value / y)));
 
     // UnitGenerateOptions.Comparable
-    public int CompareTo(Hp other) => value.CompareTo(other);
+    public int CompareTo(Hp other) => value.CompareTo(other.value);
     public static bool operator >(in Hp x, in Hp y) => x.value > y.value;
     public static bool operator <(in Hp x, in Hp y) => x.value < y.value;
     public static bool operator >=(in Hp x, in Hp y) => x.value >= y.value;
@@ -319,7 +319,7 @@ public static T operator /(in T x, in U y) => new T(checked((U)(x.value / y)));
 Implements `IComparable<T>` and `>`, `<`, `>=`, `<=` operators.
 
 ```csharp
-public U CompareTo(T other) => value.CompareTo(other);
+public U CompareTo(T other) => value.CompareTo(other.value);
 public static bool operator >(in T x, in T y) => x.value > y.value;
 public static bool operator <(in T x, in T y) => x.value < y.value;
 public static bool operator >=(in T x, in T y) => x.value >= y.value;

@@ -290,7 +290,7 @@ namespace UnitGenerator
  if (HasFlag(UnitGenerateOptions.Comparable)) { 
             this.Write(" \r\n        // UnitGenerateOptions.Comparable\r\n\r\n        public int CompareTo(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" other)\r\n        {\r\n            return value.CompareTo(other);\r\n        }\r\n      " +
+            this.Write(" other)\r\n        {\r\n            return value.CompareTo(other.value);\r\n        }\r\n      " +
                     "  \r\n        public static bool operator >(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" x, in ");

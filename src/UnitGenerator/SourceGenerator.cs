@@ -63,7 +63,7 @@ namespace UnitGenerator
                         else if (i == 1) // UnitGenerateOptions options
                         {
                             // e.g. UnitGenerateOptions.ImplicitOperator | UnitGenerateOptions.ParseMethod => ImplicitOperatior, ParseMethod
-                            var parsed = Enum.Parse(typeof(UnitGenerateOptions), expr.ToString().Replace("UnitGenerateOptions.", "").Replace("|", ","));
+                            var parsed = Enum.ToObject(typeof(UnitGenerateOptions), model.GetConstantValue(expr).Value);
                             prop.Options = (UnitGenerateOptions)parsed;
                         }
                         else if (i == 2) // string toStringFormat

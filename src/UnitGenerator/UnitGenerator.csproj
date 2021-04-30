@@ -5,7 +5,7 @@
         <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
-		<IsRoslynComponent>true</IsRoslynComponent>
+        <IsRoslynComponent>true</IsRoslynComponent>
 
         <!-- does not need runtime self -->
         <IncludeBuildOutput>false</IncludeBuildOutput>

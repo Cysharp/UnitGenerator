@@ -20,16 +20,12 @@ namespace UnitGenerator
                 // System.Diagnostics.Debugger.Launch();
             }
 #endif 
-
+            context.RegisterForPostInitialization(x => SetDefaultAttribute(x));
             context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
         }
 
         public void Execute(GeneratorExecutionContext context)
         {
-            // setup default attributes.
-            var attrCode = new UnitOfAttributeTemplate().TransformText();
-            context.AddSource("UnitOfAttribute.cs", attrCode);
-
             try
             {
                 var receiver = context.SyntaxReceiver as SyntaxReceiver;
@@ -103,6 +99,12 @@ namespace UnitGenerator
             {
                 System.Diagnostics.Trace.WriteLine(ex.ToString());
             }
+        }
+
+        private void SetDefaultAttribute(GeneratorPostInitializationContext context)
+        {
+            var attrCode = new UnitOfAttributeTemplate().TransformText();
+            context.AddSource("UnitOfAttribute.cs", attrCode);
         }
 
         struct UnitOfAttributeProperty

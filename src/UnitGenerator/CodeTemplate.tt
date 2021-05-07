@@ -255,7 +255,7 @@ namespace <#= Namespace #>
 
         public int CompareTo(<#= Name #> other)
         {
-            return value.CompareTo(other);
+            return value.CompareTo(other.value);
         }
         
         public static bool operator >(in <#= Name #> x, in <#= Name #> y)

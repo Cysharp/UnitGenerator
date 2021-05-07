@@ -23,4 +23,4 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 5.0.100
-      - run: dotnet build -c Debug
+      - run: dotnet build -c Debug src/UnitGenerator

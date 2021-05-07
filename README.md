@@ -266,7 +266,17 @@ public readonly partial struct EndDate { }
 public readonly partial struct AllOptionsStruct { }
 ```
 
-> Currently UnitGenerateOptions only supports to use directly. For example, `[UnitOf(typeof(int)), MyConstants.MyOptions]` is invalid.
+You can setup project default options like this.
+
+```csharp
+internal static class UnitOfOptions
+{
+    public const UnitGenerateOptions Default = UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.MinMaxMethod;
+}
+
+[UnitOf(typeof(int), UnitOfOptions.Default)]
+public readonly partial struct Hp { }
+```
 
 ### ImplicitOperator
 

@@ -5,6 +5,7 @@
         <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <IsRoslynComponent>true</IsRoslynComponent>
 
         <!-- does not need runtime self -->
         <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -32,7 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>

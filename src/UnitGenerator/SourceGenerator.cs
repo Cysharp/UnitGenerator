@@ -20,16 +20,12 @@ namespace UnitGenerator
                 // System.Diagnostics.Debugger.Launch();
             }
 #endif 
-
+            context.RegisterForPostInitialization(x => SetDefaultAttribute(x));
             context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
         }
 
         public void Execute(GeneratorExecutionContext context)
         {
-            // setup default attributes.
-            var attrCode = new UnitOfAttributeTemplate().TransformText();
-            context.AddSource("UnitOfAttribute.cs", attrCode);
-
             try
             {
                 var receiver = context.SyntaxReceiver as SyntaxReceiver;
@@ -67,7 +63,7 @@ namespace UnitGenerator
                         else if (i == 1) // UnitGenerateOptions options
                         {
                             // e.g. UnitGenerateOptions.ImplicitOperator | UnitGenerateOptions.ParseMethod => ImplicitOperatior, ParseMethod
-                            var parsed = Enum.Parse(typeof(UnitGenerateOptions), expr.ToString().Replace("UnitGenerateOptions.", "").Replace("|", ","));
+                            var parsed = Enum.ToObject(typeof(UnitGenerateOptions), model.GetConstantValue(expr).Value);
                             prop.Options = (UnitGenerateOptions)parsed;
                         }
                         else if (i == 2) // string toStringFormat
@@ -103,6 +99,12 @@ namespace UnitGenerator
             {
                 System.Diagnostics.Trace.WriteLine(ex.ToString());
             }
+        }
+
+        private void SetDefaultAttribute(GeneratorPostInitializationContext context)
+        {
+            var attrCode = new UnitOfAttributeTemplate().TransformText();
+            context.AddSource("UnitOfAttribute.cs", attrCode);
         }
 
         struct UnitOfAttributeProperty

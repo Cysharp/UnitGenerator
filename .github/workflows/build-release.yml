@@ -29,6 +29,11 @@ jobs:
         with:
           name: nuget
           path: ./publish/
+      # Upload analyzer.
+      - uses: actions/upload-artifact@v2
+        with:
+          name: UnitGenerator
+          path: ./src/UnitGenerator/bin/Release/netstandard2.0/UnitGenerator.dll
 
   create-release:
     needs: [build-dotnet]
@@ -59,3 +64,13 @@ jobs:
 
       # Upload to NuGet
       - run: dotnet nuget push "./nuget/*.nupkg" -s https://www.nuget.org/api/v2/package -k ${{ secrets.NUGET_KEY }}
+      
+      # Upload to Releases
+      - uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./UnitGenerator/UnitGenerator.dll
+          asset_name: UnitGenerator.dll
+          asset_content_type: application/octet-strea

@@ -19,8 +19,8 @@ using System.Text.Json.Serialization;
 
 <# if (!string.IsNullOrEmpty(Namespace)) { #>
 namespace <#= Namespace #>
-<# } #>
 {
+<# } #>
 <# if (HasFlag(UnitGenerateOptions.JsonConverter)) { #> 
     [JsonConverter(typeof(<#= Name #>JsonConverter))]
 <# } #>

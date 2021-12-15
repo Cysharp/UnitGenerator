@@ -14,12 +14,6 @@ namespace UnitGenerator
     {
         public void Initialize(GeneratorInitializationContext context)
         {
-#if DEBUG
-            if (!System.Diagnostics.Debugger.IsAttached)
-            {
-                // System.Diagnostics.Debugger.Launch();
-            }
-#endif 
             context.RegisterForPostInitialization(x => SetDefaultAttribute(x));
             context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
         }
@@ -73,7 +67,7 @@ namespace UnitGenerator
                         }
                     }
 
-                    ADD:
+                ADD:
                     list.Add((type, prop));
                 }
 
@@ -85,7 +79,7 @@ namespace UnitGenerator
                     var template = new CodeTemplate()
                     {
                         Name = typeSymbol.Name,
-                        Namespace = typeSymbol.ContainingNamespace.ToDisplayString(),
+                        Namespace = typeSymbol.ContainingNamespace.IsGlobalNamespace ? null : typeSymbol.ContainingNamespace.ToDisplayString(),
                         Type = prop.Type.ToString(),
                         Options = prop.Options,
                         ToStringFormat = prop.ToStringFormat

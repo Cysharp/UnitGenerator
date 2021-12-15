@@ -6,6 +6,14 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using UnitGenerator;
 
+
+
+
+[UnitOf(typeof(int))]
+public readonly partial struct NoNamespace
+{
+}
+
 namespace Sample
 {
 
@@ -36,11 +44,11 @@ namespace Sample
     }
 
     [UnitOf(typeof(int), UnitGenerateOptions.MessagePackFormatter)]
-    public readonly partial struct UserId2 
+    public readonly partial struct UserId2
     {
         public void Foo()
         {
-            
+
 
             _ = AsPrimitive();
         }

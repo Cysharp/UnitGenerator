@@ -416,7 +416,11 @@ builder.HasConversion(new UserId.UserIdValueConverter());
 
 ## Use for Unity
 
-C# Source Generator feature is rely on C# 9.0. Currently Unity(2020) does not support C# 9.0 so can not use directly. However, C# Source Genertor supports output source as file.
+C# Source Generator feature is rely on C# 9.0. If you are using Unity 2021.2, that supports [Source Generators](https://docs.unity3d.com/2021.2/Documentation/Manual/roslyn-analyzers.html). Add the `UnitGenerator.dll` from the [releases page](https://github.com/Cysharp/UnitGenerator/releases), disable Any Platform, disable Include all platforms and set label as `RoslynAnalyzer`.
+
+It works in Unity Editor however does not work on IDE because Unity does not generate analyzer reference to `.csproj`. We provides [CsprojModifer](https://github.com/Cysharp/CsprojModifier) to analyzer support, uses `Add analyzer references to generated .csproj` supports both IDE and Unity Editor.
+
+Unity(2020) does not support C# 9.0 so can not use directly. However, C# Source Genertor supports output source as file.
 
 1. Create `UnitSourceGen.csproj`.
 

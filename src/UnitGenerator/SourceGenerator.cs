@@ -86,7 +86,14 @@ namespace UnitGenerator
                     };
 
                     var text = template.TransformText();
-                    context.AddSource($"{template.Namespace}.{template.Name}.Generated.cs", text);
+                    if (template.Namespace == null)
+                    {
+                        context.AddSource($"{template.Name}.Generated.cs", text);
+                    }
+                    else
+                    {
+                        context.AddSource($"{template.Namespace}.{template.Name}.Generated.cs", text);
+                    }
                 }
             }
             catch (Exception ex)

@@ -10,7 +10,9 @@
         <!-- does not need runtime self -->
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-        
+		<IncludeSymbols>false</IncludeSymbols>
+		<DevelopmentDependency>true</DevelopmentDependency>
+		
         <!-- NuGet -->
         <PackageId>UnitGenerator</PackageId>
         <Description>C# Source Generator to create value-object, inspired by units of measure.</Description>

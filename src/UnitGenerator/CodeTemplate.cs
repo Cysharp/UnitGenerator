@@ -105,9 +105,7 @@ namespace UnitGenerator
                     "    public override int GetHashCode()\r\n        {\r\n            return value.GetHa" +
                     "shCode();\r\n        }\r\n\r\n        public override string ToString()\r\n        {\r\n");
  if (ToStringFormat == null) { 
-            this.Write("            return \"");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write("(\" + value + \")\";\r\n");
+            this.Write("            return value.ToString();\r\n");
  } else { 
             this.Write("            return string.Format(\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(ToStringFormat));

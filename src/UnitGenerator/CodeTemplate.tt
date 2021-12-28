@@ -85,7 +85,7 @@ namespace <#= Namespace #>
         public override string ToString()
         {
 <# if (ToStringFormat == null) { #>
-            return "<#= Name #>(" + value + ")";
+            return value.ToString();
 <# } else { #>
             return string.Format("<#= ToStringFormat #>", value);
 <# } #>

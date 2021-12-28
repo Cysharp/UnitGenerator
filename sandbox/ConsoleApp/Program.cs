@@ -8,6 +8,7 @@ using UnitGenerator;
 
 
 
+Console.WriteLine(new Sample.Hp(100).ToString());
 
 [UnitOf(typeof(int))]
 public readonly partial struct NoNamespace
@@ -25,6 +26,7 @@ namespace Sample
         void Foo()
         {
             _ = this.AsPrimitive();
+            _ = this.ToString();
         }
 
     }

@@ -40,7 +40,7 @@ public readonly partial struct UserId : IEquatable<UserId>
     public bool Equals(UserId other) => value.Equals(other.value);
     public override bool Equals(object? obj) => // snip...
     public override int GetHashCode() => value.GetHashCode();
-    public override string ToString() => "UserId(" + value + ")";
+    public override string ToString() => value.ToString();
     public static bool operator ==(in UserId x, in UserId y) => x.value.Equals(y.value);
     public static bool operator !=(in UserId x, in UserId y) => !x.value.Equals(y.value);
 
@@ -75,7 +75,7 @@ public readonly partial struct Hp : IEquatable<Hp> , IComparable<Hp>
     public bool Equals(Hp other) => value.Equals(other.value);
     public override bool Equals(object? obj) => // snip...
     public override int GetHashCode() => value.GetHashCode();
-    public override string ToString() => "Hp(" + value + ")";
+    public override string ToString() => value.ToString();
     public static bool operator ==(in Hp x, in Hp y) => x.value.Equals(y.value);
     public static bool operator !=(in Hp x, in Hp y) => !x.value.Equals(y.value);
     private class HpTypeConverter : System.ComponentModel.TypeConverter { /* snip... */ }
@@ -228,7 +228,7 @@ public static bool operator !(Foo x) => !x.value;
 
 Second parameter `UnitGenerateOptions options` can configure which method to implement, default is `None`.
 
-Third parameter `strign toStringFormat` can configure `ToString` format. Default is null and output as $`TypeName({0})`.
+Third parameter `strign toStringFormat` can configure `ToString` format. Default is null and output as $`{0}`.
 
 ## UnitGenerateOptions
 

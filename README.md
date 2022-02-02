@@ -168,6 +168,7 @@ public readonly partial struct UserId
   - [ArithmeticOperator](#arithmeticoperator)
   - [ValueArithmeticOperator](#valuearithmeticoperator)
   - [Comparable](#comparable)
+  - [WithoutComparisonOperator](#withoutcomparisonoperator)
   - [Validate](#validate)
   - [JsonConverter](#jsonconverter)
   - [MessagePackFormatter](#messagepackformatter)

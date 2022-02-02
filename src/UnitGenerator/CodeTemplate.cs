@@ -298,7 +298,9 @@ namespace UnitGenerator
             this.Write(" \r\n        // UnitGenerateOptions.Comparable\r\n\r\n        public int CompareTo(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" other)\r\n        {\r\n            return value.CompareTo(other.value);\r\n        }\r\n" +
-                    "        \r\n        public static bool operator >(in ");
+                    "\r\n");
+ if (!HasFlag(UnitGenerateOptions.WithoutComparisonOperator)) { 
+            this.Write("         \r\n        \r\n        public static bool operator >(in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
@@ -317,7 +319,9 @@ namespace UnitGenerator
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" y)\r\n        {\r\n            return x.value <= y.value;\r\n        }\r\n\r\n");
+            this.Write(" y)\r\n        {\r\n            return x.value <= y.value;\r\n        }\r\n");
+ } 
+            this.Write("\r\n");
  } 
             this.Write("\r\n");
  if (HasFlag(UnitGenerateOptions.JsonConverter)) { 

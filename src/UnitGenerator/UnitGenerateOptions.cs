@@ -18,5 +18,6 @@ namespace UnitGenerator
         MessagePackFormatter = 256,
         DapperTypeHandler = 512,
         EntityFrameworkValueConverter = 1024,
+        WithoutComparisonOperator = 2048
     }
 }

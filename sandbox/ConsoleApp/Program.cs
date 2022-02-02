@@ -15,7 +15,7 @@ public readonly partial struct NoNamespace
 {
 }
 
-[UnitOf(typeof(Guid))]
+[UnitOf(typeof(Guid), UnitGenerateOptions.Comparable | UnitGenerateOptions.WithoutComparisonOperator)]
 public readonly partial struct FooId { }
 
 namespace Sample

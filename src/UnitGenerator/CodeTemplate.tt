@@ -265,6 +265,8 @@ namespace <#= Namespace #>
         {
             return value.CompareTo(other.value);
         }
+
+<# if (!HasFlag(UnitGenerateOptions.WithoutComparisonOperator)) { #>         
         
         public static bool operator >(in <#= Name #> x, in <#= Name #> y)
         {
@@ -285,6 +287,7 @@ namespace <#= Namespace #>
         {
             return x.value <= y.value;
         }
+<# } #>
 
 <# } #>
 

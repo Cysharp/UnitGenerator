@@ -342,6 +342,15 @@ public static bool operator >=(in T x, in T y) => x.value >= y.value;
 public static bool operator <=(in T x, in T y) => x.value <= y.value;
 ```
 
+### WithoutComparisonOperator
+
+Without implements `>`, `<`, `>=`, `<=` operators. For example, useful for Guid.
+
+```csharpd
+[UnitOf(typeof(Guid), UnitGenerateOptions.Comparable | UnitGenerateOptions.WithoutComparisonOperator)]
+public readonly partial struct FooId { }
+```
+
 ### Validate
 
 Implements `partial void Validate()` method that is called on constructor.

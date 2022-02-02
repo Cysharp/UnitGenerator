@@ -121,6 +121,16 @@ namespace UnitGenerator
             this.Write(" x, in ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" y)\r\n        {\r\n            return !x.value.Equals(y.value);\r\n        }\r\n\r\n");
+ if (Type == "Guid" || Type == "System.Guid") { 
+            this.Write("        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" New");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("()\r\n        {\r\n            return new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("(Guid.NewGuid());\r\n        }\r\n\r\n");
+ } 
+            this.Write("\r\n");
  if (HasFlag(UnitGenerateOptions.ParseMethod)) { 
             this.Write(" \r\n        // UnitGenerateOptions.ParseMethod\r\n\r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));

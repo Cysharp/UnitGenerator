@@ -226,6 +226,12 @@ public static bool operator false(Foo x) => !x.value;
 public static bool operator !(Foo x) => !x.value;
 ```
 
+> When type is Guid, also implements `New***` static operator.
+
+```csharp
+public static GroupId NewGroupId();
+```
+
 Second parameter `UnitGenerateOptions options` can configure which method to implement, default is `None`.
 
 Third parameter `strign toStringFormat` can configure `ToString` format. Default is null and output as $`{0}`.

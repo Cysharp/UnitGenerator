@@ -15,6 +15,9 @@ public readonly partial struct NoNamespace
 {
 }
 
+[UnitOf(typeof(Guid))]
+public readonly partial struct FooId { }
+
 namespace Sample
 {
 
@@ -27,6 +30,10 @@ namespace Sample
         {
             _ = this.AsPrimitive();
             _ = this.ToString();
+
+            _ = FooId.NewFooId();
+            Guid.NewGuid();
+
         }
 
     }

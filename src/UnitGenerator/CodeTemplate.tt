@@ -101,6 +101,14 @@ namespace <#= Namespace #>
             return !x.value.Equals(y.value);
         }
 
+<# if (Type == "Guid" || Type == "System.Guid") { #>
+        public static <#= Name #> New<#= Name #>()
+        {
+            return new <#= Name #>(Guid.NewGuid());
+        }
+
+<# } #>
+
 <# if (HasFlag(UnitGenerateOptions.ParseMethod)) { #> 
         // UnitGenerateOptions.ParseMethod
 

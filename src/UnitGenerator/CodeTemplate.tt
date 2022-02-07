@@ -102,9 +102,27 @@ namespace <#= Namespace #>
         }
 
 <# if (Type == "Guid" || Type == "System.Guid") { #>
+        public static <#= Name #> New()
+        {
+            return new <#= Name #>(Guid.NewGuid());
+        }
+
         public static <#= Name #> New<#= Name #>()
         {
             return new <#= Name #>(Guid.NewGuid());
+        }
+
+<# } #>
+
+<# if (Type == "Ulid" || Type == "System.Ulid") { #>
+        public static <#= Name #> New()
+        {
+            return new <#= Name #>(Ulid.NewGuid());
+        }
+
+        public static <#= Name #> New<#= Name #>()
+        {
+            return new <#= Name #>(Ulid.NewGuid());
         }
 
 <# } #>

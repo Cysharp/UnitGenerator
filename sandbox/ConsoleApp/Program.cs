@@ -18,6 +18,9 @@ public readonly partial struct NoNamespace
 [UnitOf(typeof(Guid), UnitGenerateOptions.Comparable | UnitGenerateOptions.WithoutComparisonOperator)]
 public readonly partial struct FooId { }
 
+[UnitOf(typeof(Ulid), UnitGenerateOptions.Comparable | UnitGenerateOptions.WithoutComparisonOperator | UnitGenerateOptions.MessagePackFormatter)]
+public readonly partial struct BarId { }
+
 namespace Sample
 {
 
@@ -34,6 +37,9 @@ namespace Sample
             _ = FooId.NewFooId();
             Guid.NewGuid();
 
+
+
+            
         }
 
     }

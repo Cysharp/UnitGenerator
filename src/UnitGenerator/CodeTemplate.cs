@@ -124,11 +124,29 @@ namespace UnitGenerator
  if (Type == "Guid" || Type == "System.Guid") { 
             this.Write("        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" New()\r\n        {\r\n            return new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("(Guid.NewGuid());\r\n        }\r\n\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" New");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("()\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write("(Guid.NewGuid());\r\n        }\r\n\r\n");
+ } 
+            this.Write("\r\n");
+ if (Type == "Ulid" || Type == "System.Ulid") { 
+            this.Write("        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" New()\r\n        {\r\n            return new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("(Ulid.NewGuid());\r\n        }\r\n\r\n        public static ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" New");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("()\r\n        {\r\n            return new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("(Ulid.NewGuid());\r\n        }\r\n\r\n");
  } 
             this.Write("\r\n");
  if (HasFlag(UnitGenerateOptions.ParseMethod)) { 

@@ -13,6 +13,8 @@
         <PackageReference Include="Dapper" Version="2.0.78" />
         <PackageReference Include="MessagePack" Version="2.2.85" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.1" />
+        <PackageReference Include="Ulid" Version="1.2.6" />
+        <PackageReference Include="Ulid.MessagePack" Version="1.2.6" />
     </ItemGroup>
 
     <ItemGroup>

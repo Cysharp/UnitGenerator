@@ -122,7 +122,11 @@ namespace UnitGenerator
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" y)\r\n        {\r\n            return !x.value.Equals(y.value);\r\n        }\r\n\r\n");
  if (Type == "Guid" || Type == "System.Guid") { 
-            this.Write("        public static ");
+            this.Write("        public static readonly ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" Empty = default(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(");\r\n\r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" New()\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
@@ -136,7 +140,11 @@ namespace UnitGenerator
  } 
             this.Write("\r\n");
  if (Type == "Ulid" || Type == "System.Ulid") { 
-            this.Write("        public static ");
+            this.Write("        public static readonly ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(" Empty = default(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(");\r\n        \r\n        public static ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" New()\r\n        {\r\n            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));

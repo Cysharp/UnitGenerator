@@ -8,8 +8,11 @@ using UnitGenerator;
 
 
 
-Console.WriteLine(new Sample.Hp(100).ToString());
-Console.WriteLine(BarId.New());
+var id1 = FooId.Empty;
+var id2 = new FooId(Guid.Empty);
+
+
+Console.WriteLine(id1 == id2);
 
 [UnitOf(typeof(int))]
 public readonly partial struct NoNamespace
@@ -37,10 +40,13 @@ namespace Sample
 
             _ = FooId.NewFooId();
             Guid.NewGuid();
+            //public static readonly Guid Empty;
+            //Guid.Empty
+
+            // public static readonly Ulid Empty = default(Ulid);
+            // Ulid.Empty
 
 
-
-            
         }
 
     }
@@ -88,10 +94,7 @@ namespace ConsoleApp
 
         static void Main(string[] args)
         {
-            new SampleValidate(99999);
 
-
-            default(StreetAddress).AsPrimitive();
 
         }
     }

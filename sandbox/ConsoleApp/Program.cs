@@ -9,6 +9,7 @@ using UnitGenerator;
 
 
 Console.WriteLine(new Sample.Hp(100).ToString());
+Console.WriteLine(BarId.New());
 
 [UnitOf(typeof(int))]
 public readonly partial struct NoNamespace

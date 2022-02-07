@@ -117,12 +117,12 @@ namespace <#= Namespace #>
 <# if (Type == "Ulid" || Type == "System.Ulid") { #>
         public static <#= Name #> New()
         {
-            return new <#= Name #>(Ulid.NewGuid());
+            return new <#= Name #>(Ulid.NewUlid());
         }
 
         public static <#= Name #> New<#= Name #>()
         {
-            return new <#= Name #>(Ulid.NewGuid());
+            return new <#= Name #>(Ulid.NewUlid());
         }
 
 <# } #>

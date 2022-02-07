@@ -227,9 +227,10 @@ public static bool operator false(Foo x) => !x.value;
 public static bool operator !(Foo x) => !x.value;
 ```
 
-> When type is Guid or [Ulid](https://github.com/Cysharp/Ulid), also implements `New()` and `New***()` static operator.
+> When type is Guid or [Ulid](https://github.com/Cysharp/Ulid), also implements `Empty, New()` and `New***()` static operator.
 
 ```csharp
+public static readonly GroupId Empty;
 public static GroupId New();
 public static GroupId NewGroupId();
 ```

@@ -28,7 +28,7 @@ namespace <#= Namespace #>
     [MessagePackFormatter(typeof(<#= Name #>MessagePackFormatter))]
 <# } #>
     [System.ComponentModel.TypeConverter(typeof(<#= Name #>TypeConverter))]
-    public readonly partial struct <#= Name #> : IEquatable<<#= Name #>> <#= HasFlag(UnitGenerateOptions.Comparable) ? $", IComparable<{Name}>" : "" #>
+    readonly partial struct <#= Name #> : IEquatable<<#= Name #>> <#= HasFlag(UnitGenerateOptions.Comparable) ? $", IComparable<{Name}>" : "" #>
     {
         readonly <#= Type #> value;
 

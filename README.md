@@ -173,6 +173,7 @@ public readonly partial struct UserId
   - [WithoutComparisonOperator](#withoutcomparisonoperator)
   - [Validate](#validate)
   - [JsonConverter](#jsonconverter)
+  - [JsonConverterDictionaryKeySupport](#jsonconverterdictionarykeysupport)
   - [MessagePackFormatter](#messagepackformatter)
   - [DapperTypeHandler](#dappertypehandler)
   - [EntityFrameworkValueConverter](#entityframeworkvalueconverter)

@@ -19,7 +19,7 @@ namespace ConsoleApp
             _ = AsPrimitive();
         }
     }
-    [UnitOf(typeof(string), UnitGenerateOptions.Validate | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
+    [UnitOf(typeof(string), UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct ST
     {
         private partial void Validate()

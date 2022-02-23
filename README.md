@@ -125,10 +125,12 @@ enum UnitGenerateOptions
     MessagePackFormatter = 256,
     DapperTypeHandler = 512,
     EntityFrameworkValueConverter = 1024,
+    WithoutComparisonOperator = 2048,
+    JsonConverterDictionaryKeySupport = 4096
 }
 ```
 
-UnitGenerateOptions has some serializer support. For example, a result like `Serialize(userId) => { Value = 1111 }` is awful. The value-object should be serialized natively, i.e. `Serialzie(useId) => 1111`, and should be able to be added directly to a database, etc.
+UnitGenerateOptions has some serializer support. For example, a result like `Serialize(userId) => { Value = 1111 }` is awful. The value-object should be serialized natively, i.e. `Serialize(useId) => 1111`, and should be able to be added directly to a database, etc.
 
 Currently UnitGenerator supports [MessagePack for C#](https://github.com/neuecc/MessagePack-CSharp), System.Text.Json(JsonSerializer), [Dapper](https://github.com/StackExchange/Dapper) and EntityFrameworkCore.
 
@@ -390,6 +392,15 @@ public readonly partial struct UserId
     class UserIdJsonConverter : JsonConverter<UserId>
 }
 ```
+
+### JsonConverterDictionaryKeySupport
+
+Implements `JsonConverter`'s `WriteAsPropertyName/ReadAsPropertyName`. It supports from .NET 6, supports Dictionary's Key.
+
+```csharp
+var dict = Dictionary<UserId, int>
+JsonSerializer.Serialize(dict);
+````
 
 ### MessagePackFormatter
 

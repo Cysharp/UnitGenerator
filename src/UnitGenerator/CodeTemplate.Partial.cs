@@ -40,5 +40,33 @@ namespace UnitGenerator
                 _ => DbType.Object
             };
         }
+
+        internal bool IsSupportUtf8Formatter()
+        {
+            return Type switch
+            {
+                "short" => true,
+                "int" => true,
+                "long" => true,
+                "ushort" => true,
+                "uint" => true,
+                "ulong" => true,
+                "bool" => true,
+                "byte" => true,
+                "sbyte" => true,
+                "float" => true,
+                "double" => true,
+                "System.DateTime" => true,
+                "System.DateTimeOffset" => true,
+                "System.TimeSpan" => true,
+                "System.Guid" => true,
+                _ => false
+            };
+        }
+
+        internal bool IsUlid()
+        {
+            return Type == "Ulid" || Type == "System.Ulid";
+        }
     }
 }

@@ -342,6 +342,49 @@ namespace <#= Namespace #>
                     throw new JsonException($"{typeof(<#= Type #>)} converter does not found.");
                 }
             }
+
+<#if (HasFlag(UnitGenerateOptions.JsonConverterDictionaryKeySupport)) {  #>
+            public override void WriteAsPropertyName(Utf8JsonWriter writer, <#= Name #> value, JsonSerializerOptions options)
+            {
+<#if (IsSupportUtf8Formatter()) {  #>
+                Span<byte> buffer = stackalloc byte[36];
+                if (System.Buffers.Text.Utf8Formatter.TryFormat(value.value, buffer, out var written))
+                {
+                    writer.WritePropertyName(buffer.Slice(0, written));
+                }
+                else
+                {
+                    writer.WritePropertyName(value.value.ToString());
+                }
+<# } else if (IsUlid()) { #>
+                writer.WritePropertyName(value.value.ToString());
+<# } else { #>
+                writer.WritePropertyName(value.value.ToString());
+<# } #>
+            }
+
+            public override <#= Name #> ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+<#if (IsSupportUtf8Formatter()) {  #>
+                if (System.Buffers.Text.Utf8Parser.TryParse(reader.ValueSpan, out <#= Type #> value, out var consumed))
+                {
+                    return new <#= Name #>(value);
+                }
+                else
+                {
+                    return new <#= Name #>(<#= Type #>.Parse(reader.GetString()));
+                }
+<# } else if (IsUlid()) { #>
+                return new <#= Name #>(<#= Type #>.Parse(reader.GetString()));
+<# } else if(Type == "string")  { #>
+                    return new <#= Name #>(reader.GetString());
+<# } else { #>
+                return new <#= Name #>(<#= Type #>.Parse(reader.GetString()));
+<# } #>
+            }
+
+<# } #>
+
         }
 
 <# } #>

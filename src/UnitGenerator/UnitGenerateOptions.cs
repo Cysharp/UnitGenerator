@@ -18,6 +18,7 @@ namespace UnitGenerator
         MessagePackFormatter = 256,
         DapperTypeHandler = 512,
         EntityFrameworkValueConverter = 1024,
-        WithoutComparisonOperator = 2048
+        WithoutComparisonOperator = 2048,
+        JsonConverterDictionaryKeySupport = 4096
     }
 }

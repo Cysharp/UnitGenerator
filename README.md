@@ -417,7 +417,7 @@ public readonly partial struct UserId
 
 ### DapperTypeHandler
 
-Implements Dapper's TypeHandler by public accessibility. It is not registered automatically so you need to register manually.
+Implements Dapper's TypeHandler by public accessibility. TypeHandler is automatically registered at the time of Module initialization.
 
 ```csharp
 public readonly partial struct UserId
@@ -425,8 +425,11 @@ public readonly partial struct UserId
     public class UserIdTypeHandler : Dapper.SqlMapper.TypeHandler<UserId>
 }
 
-// setup handler manually
-Dapper.SqlMapper.AddTypeHandler(new UserId.UserIdTypeHandler());
+[ModuleInitializer]
+public static void AddTypeHandler()
+{
+    Dapper.SqlMapper.AddTypeHandler(new A.ATypeHandler());
+}
 ```
 
 ### EntityFrameworkValueConverter

@@ -33,6 +33,9 @@ namespace UnitGenerator
  if (HasFlag(UnitGenerateOptions.JsonConverter)) { 
             this.Write(" \r\nusing System.Text.Json;\r\nusing System.Text.Json.Serialization;\r\n");
  } 
+ if (HasFlag(UnitGenerateOptions.DapperTypeHandler)) { 
+            this.Write(" \r\nusing System.Runtime.CompilerServices;\r\n");
+ } 
             this.Write("\r\n");
  if (!string.IsNullOrEmpty(Namespace)) { 
             this.Write("namespace ");
@@ -478,7 +481,13 @@ if (IsSupportUtf8Formatter()) {
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" value)\r\n            {\r\n                parameter.DbType = System.Data.DbType.");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetDbType()));
-            this.Write(";\r\n                parameter.Value = value.value;\r\n            }\r\n        }\r\n\r\n");
+            this.Write(";\r\n                parameter.Value = value.value;\r\n            }\r\n        }\r\n\r\n  " +
+                    "      [ModuleInitializer]\r\n        public static void AddTypeHandler()\r\n        " +
+                    "{\r\n            Dapper.SqlMapper.AddTypeHandler(new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write(".");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Name));
+            this.Write("TypeHandler());\r\n        }\r\n");
  } 
             this.Write("\r\n");
  if (HasFlag(UnitGenerateOptions.EntityFrameworkValueConverter)) { 

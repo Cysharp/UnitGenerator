@@ -16,6 +16,9 @@ using MessagePack.Formatters;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 <# } #>
+<# if (HasFlag(UnitGenerateOptions.DapperTypeHandler)) { #> 
+using System.Runtime.CompilerServices;
+<# } #>
 
 <# if (!string.IsNullOrEmpty(Namespace)) { #>
 namespace <#= Namespace #>
@@ -422,6 +425,11 @@ namespace <#= Namespace #>
             }
         }
 
+        [ModuleInitializer]
+        public static void AddTypeHandler()
+        {
+            Dapper.SqlMapper.AddTypeHandler(new <#= Name #>.<#= Name #>TypeHandler());
+        }
 <# } #>
 
 <# if (HasFlag(UnitGenerateOptions.EntityFrameworkValueConverter)) { #> 

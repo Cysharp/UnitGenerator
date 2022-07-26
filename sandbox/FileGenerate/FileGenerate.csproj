@@ -5,6 +5,7 @@
 
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>$(ProjectDir)..\Generated</CompilerGeneratedFilesOutputPath>
+        <IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>

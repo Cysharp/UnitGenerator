@@ -1,99 +1,120 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 
 namespace UnitGenerator
 {
     [Generator]
-    public class SourceGenerator : ISourceGenerator
+    public class SourceGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            context.RegisterForPostInitialization(x => SetDefaultAttribute(x));
-            context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+            context.RegisterPostInitializationOutput(static ctx =>
+            {
+                ctx.CancellationToken.ThrowIfCancellationRequested();
+
+                var attrCode = NormalizeNewLines(new UnitOfAttributeTemplate().TransformText());
+                ctx.AddSource("UnitOfAttribute.cs", attrCode);
+            });
+
+            var provider = context.SyntaxProvider
+                .CreateSyntaxProvider(Predicate, Transform);
+
+            context.RegisterSourceOutput(provider, GenerateSource);
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        private static bool Predicate(SyntaxNode syntaxNode, CancellationToken cancellationToken)
         {
-            try
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (syntaxNode is StructDeclarationSyntax s && s.AttributeLists.Count > 0)
             {
-                var receiver = context.SyntaxReceiver as SyntaxReceiver;
-                if (receiver == null) return;
-
-                var list = new List<(StructDeclarationSyntax, UnitOfAttributeProperty)>();
-                foreach (var (type, attr) in receiver.Targets)
+                var attr = s.AttributeLists.SelectMany(x => x.Attributes).FirstOrDefault(x => x.Name.ToString() is "UnitOf" or "UnitOfAttribute" or "UnitGenerator.UnitOf" or "UnitGenerator.UnitOfAttribute");
+                if (attr is null || attr.ArgumentList is null)
                 {
-                    if (attr.ArgumentList is null) continue;
-
-                    var model = context.Compilation.GetSemanticModel(type.SyntaxTree);
-
-                    // retrieve attribute parameter
-                    var prop = new UnitOfAttributeProperty();
-
-                    if (attr.ArgumentList is null) goto ADD;
-                    for (int i = 0; i < attr.ArgumentList.Arguments.Count; i++)
-                    {
-                        var arg = attr.ArgumentList.Arguments[i];
-                        var expr = arg.Expression;
-
-                        if (i == 0) // Type type
-                        {
-                            if (expr is TypeOfExpressionSyntax typeOfExpr)
-                            {
-                                var typeSymbol = model.GetSymbolInfo(typeOfExpr.Type).Symbol as ITypeSymbol;
-                                if (typeSymbol == null) throw new Exception("require type-symbol.");
-                                prop.Type = typeSymbol;
-                            }
-                            else
-                            {
-                                throw new Exception("require UnitOf attribute and ctor.");
-                            }
-                        }
-                        else if (i == 1) // UnitGenerateOptions options
-                        {
-                            // e.g. UnitGenerateOptions.ImplicitOperator | UnitGenerateOptions.ParseMethod => ImplicitOperatior, ParseMethod
-                            var parsed = Enum.ToObject(typeof(UnitGenerateOptions), model.GetConstantValue(expr).Value);
-                            prop.Options = (UnitGenerateOptions)parsed;
-                        }
-                        else if (i == 2) // string toStringFormat
-                        {
-                            var format = model.GetConstantValue(expr).Value?.ToString();
-                            prop.ToStringFormat = format;
-                        }
-                    }
-
-                ADD:
-                    list.Add((type, prop));
+                    return false;
                 }
 
-                foreach (var (type, prop) in list)
+                return true;
+            }
+
+            return false;
+        }
+
+        private static (INamedTypeSymbol, UnitOfAttributeProperty) Transform(GeneratorSyntaxContext context, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var s = (context.Node as StructDeclarationSyntax)!;
+
+            var attr = s.AttributeLists.SelectMany(x => x.Attributes).FirstOrDefault(x => x.Name.ToString() is "UnitOf" or "UnitOfAttribute" or "UnitGenerator.UnitOf" or "UnitGenerator.UnitOfAttribute")!;
+
+            var symbol = context.SemanticModel.GetDeclaredSymbol(s)!;
+            var model = context.SemanticModel;
+
+            // retrieve attribute parameter
+            var prop = new UnitOfAttributeProperty();
+
+            for (int i = 0; i < attr.ArgumentList!.Arguments.Count; i++)
+            {
+                var arg = attr.ArgumentList.Arguments[i];
+                var expr = arg.Expression;
+
+                if (i == 0) // Type type
                 {
-                    var typeSymbol = context.Compilation.GetSemanticModel(type.SyntaxTree).GetDeclaredSymbol(type);
-                    if (typeSymbol == null) throw new Exception("can not get typeSymbol.");
-
-                    var template = new CodeTemplate()
+                    if (expr is TypeOfExpressionSyntax typeOfExpr)
                     {
-                        Name = typeSymbol.Name,
-                        Namespace = typeSymbol.ContainingNamespace.IsGlobalNamespace ? null : typeSymbol.ContainingNamespace.ToDisplayString(),
-                        Type = prop.Type.ToString(),
-                        Options = prop.Options,
-                        ToStringFormat = prop.ToStringFormat
-                    };
-
-                    var text = template.TransformText();
-                    if (template.Namespace == null)
-                    {
-                        context.AddSource($"{template.Name}.Generated.cs", text);
+                        var typeSymbol = model.GetSymbolInfo(typeOfExpr.Type).Symbol as ITypeSymbol;
+                        if (typeSymbol == null) throw new Exception("require type-symbol.");
+                        prop.Type = typeSymbol;
                     }
                     else
                     {
-                        context.AddSource($"{template.Namespace}.{template.Name}.Generated.cs", text);
+                        throw new Exception("require UnitOf attribute and ctor.");
                     }
+                }
+                else if (i == 1) // UnitGenerateOptions options
+                {
+                    // e.g. UnitGenerateOptions.ImplicitOperator | UnitGenerateOptions.ParseMethod => ImplicitOperatior, ParseMethod
+                    var parsed = Enum.ToObject(typeof(UnitGenerateOptions), model.GetConstantValue(expr).Value);
+                    prop.Options = (UnitGenerateOptions)parsed;
+                }
+                else if (i == 2) // string toStringFormat
+                {
+                    var format = model.GetConstantValue(expr).Value?.ToString();
+                    prop.ToStringFormat = format;
+                }
+            }
+
+            return (symbol, prop);
+        }
+
+        private static void GenerateSource(SourceProductionContext context, (INamedTypeSymbol, UnitOfAttributeProperty) data)
+        {
+            try
+            {
+                var (typeSymbol, prop) = data;
+
+                var template = new CodeTemplate()
+                {
+                    Name = typeSymbol.Name,
+                    Namespace = typeSymbol.ContainingNamespace.IsGlobalNamespace ? null : typeSymbol.ContainingNamespace.ToDisplayString(),
+                    Type = prop.Type.ToString(),
+                    Options = prop.Options,
+                    ToStringFormat = prop.ToStringFormat
+                };
+
+                var text = NormalizeNewLines(template.TransformText());
+                if (template.Namespace == null)
+                {
+                    context.AddSource($"{template.Name}.Generated.cs", text);
+                }
+                else
+                {
+                    context.AddSource($"{template.Namespace}.{template.Name}.Generated.cs", text);
                 }
             }
             catch (Exception ex)
@@ -102,10 +123,9 @@ namespace UnitGenerator
             }
         }
 
-        private void SetDefaultAttribute(GeneratorPostInitializationContext context)
+        private static string NormalizeNewLines(string source)
         {
-            var attrCode = new UnitOfAttributeTemplate().TransformText();
-            context.AddSource("UnitOfAttribute.cs", attrCode);
+            return source.Replace("\r\n", "\n");
         }
 
         struct UnitOfAttributeProperty
@@ -113,23 +133,6 @@ namespace UnitGenerator
             public ITypeSymbol Type { get; set; }
             public UnitGenerateOptions Options { get; set; }
             public string? ToStringFormat { get; set; }
-        }
-
-        class SyntaxReceiver : ISyntaxReceiver
-        {
-            public List<(StructDeclarationSyntax type, AttributeSyntax attr)> Targets { get; } = new();
-
-            public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-            {
-                if (syntaxNode is StructDeclarationSyntax s && s.AttributeLists.Count > 0)
-                {
-                    var attr = s.AttributeLists.SelectMany(x => x.Attributes).FirstOrDefault(x => x.Name.ToString() is "UnitOf" or "UnitOfAttribute" or "UnitGenerator.UnitOf" or "UnitGenerator.UnitOfAttribute");
-                    if (attr != null)
-                    {
-                        Targets.Add((s, attr));
-                    }
-                }
-            }
         }
     }
 }

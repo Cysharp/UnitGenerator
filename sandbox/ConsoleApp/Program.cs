@@ -83,5 +83,8 @@ namespace Sample
             _ = AsPrimitive();
         }
     }
-
+    
+    [UnitOf(typeof(string), UnitGenerateOptions.ParseMethod)]
+    public readonly partial struct StringId { }
 }
+

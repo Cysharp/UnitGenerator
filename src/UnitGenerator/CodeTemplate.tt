@@ -139,11 +139,27 @@ namespace <#= Namespace #>
 
         public static <#= Name #> Parse(string s)
         {
+<# if (Type == "string") { #>
+            return new <#= Name #>(s);
+<# } else { #>
             return new <#= Name #>(<#= Type #>.Parse(s));
+<# } #>
         }
         
         public static bool TryParse(string s, out <#= Name #> result)
         {
+<# if (Type == "string") { #>
+            try
+            {
+                result = Parse(s);    
+                return true;
+            } 
+            catch 
+            {
+                result = default;
+                return false;
+            }
+<# } else { #>
             if(<#= Type #>.TryParse(s, out var r))
             {
                 result = new <#= Name #>(r);
@@ -154,6 +170,7 @@ namespace <#= Namespace #>
                 result = default(<#= Name #>);
                 return false;
             }
+<# } #>
         }
 
 <# } #>

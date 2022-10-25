@@ -453,6 +453,13 @@ namespace <#= Namespace #>
         // UnitGenerateOptions.EntityFrameworkValueConverter
         public class <#= Name #>ValueConverter : Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<<#= Name #>, <#= Type #>>
         {
+            public <#= Name #>ValueConverter()
+                : base(
+                        convertToProviderExpression: x => x.value,
+                        convertFromProviderExpression: x => new <#= Name #>(x))
+            {
+            }
+
             public <#= Name #>ValueConverter(Microsoft.EntityFrameworkCore.Storage.ValueConversion.ConverterMappingHints mappingHints = null)
                 : base(
                         convertToProviderExpression: x => x.value,

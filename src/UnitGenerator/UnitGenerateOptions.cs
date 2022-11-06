@@ -19,6 +19,7 @@ namespace UnitGenerator
         DapperTypeHandler = 512,
         EntityFrameworkValueConverter = 1024,
         WithoutComparisonOperator = 2048,
-        JsonConverterDictionaryKeySupport = 4096
+        JsonConverterDictionaryKeySupport = 4096,
+        NewtonsoftJsonConvert = 8192
     }
 }

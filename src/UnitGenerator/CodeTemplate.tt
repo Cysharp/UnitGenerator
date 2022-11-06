@@ -19,16 +19,22 @@ using System.Text.Json.Serialization;
 <# if (HasFlag(UnitGenerateOptions.DapperTypeHandler)) { #> 
 using System.Runtime.CompilerServices;
 <# } #>
+<# if (HasFlag(UnitGenerateOptions.NewtonsoftJsonConvert)) { #> 
+using Newtonsoft.Json;
+<# } #>
 
 <# if (!string.IsNullOrEmpty(Namespace)) { #>
 namespace <#= Namespace #>
 {
 <# } #>
 <# if (HasFlag(UnitGenerateOptions.JsonConverter)) { #> 
-    [JsonConverter(typeof(<#= Name #>JsonConverter))]
+    [System.Text.Json.Serialization.JsonConverter(typeof(<#= Name #>JsonConverter))]
 <# } #>
 <# if (HasFlag(UnitGenerateOptions.MessagePackFormatter)) { #> 
     [MessagePackFormatter(typeof(<#= Name #>MessagePackFormatter))]
+<# } #>
+<# if (HasFlag(UnitGenerateOptions.NewtonsoftJsonConvert)) { #> 
+    [Newtonsoft.Json.JsonConverter(typeof(<#= Name #>NewtonsoftJsonConverter))]
 <# } #>
     [System.ComponentModel.TypeConverter(typeof(<#= Name #>TypeConverter))]
     readonly partial struct <#= Name #> : IEquatable<<#= Name #>> <#= HasFlag(UnitGenerateOptions.Comparable) ? $", IComparable<{Name}>" : "" #>
@@ -335,31 +341,31 @@ namespace <#= Namespace #>
 
 <# if (HasFlag(UnitGenerateOptions.JsonConverter)) { #> 
         // UnitGenerateOptions.JsonConverter
-        private class <#= Name #>JsonConverter : JsonConverter<<#= Name #>>
+        private class <#= Name #>JsonConverter : System.Text.Json.Serialization.JsonConverter<<#= Name #>>
         {
             public override void Write(Utf8JsonWriter writer, <#= Name #> value, JsonSerializerOptions options)
             {
-                var converter = options.GetConverter(typeof(<#= Type #>)) as JsonConverter<<#= Type #>>;
+                var converter = options.GetConverter(typeof(<#= Type #>)) as System.Text.Json.Serialization.JsonConverter<<#= Type #>>;
                 if (converter != null)
                 {
                     converter.Write(writer, value.value, options);
                 }
                 else
                 {
-                    throw new JsonException($"{typeof(<#= Type #>)} converter does not found.");
+                    throw new System.Text.Json.JsonException($"{typeof(<#= Type #>)} converter does not found.");
                 }
             }
         
             public override <#= Name #> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
-                var converter = options.GetConverter(typeof(<#= Type #>)) as JsonConverter<<#= Type #>>;
+                var converter = options.GetConverter(typeof(<#= Type #>)) as System.Text.Json.Serialization.JsonConverter<<#= Type #>>;
                 if (converter != null)
                 {
                     return new <#= Name #>(converter.Read(ref reader, typeToConvert, options));
                 }
                 else
                 {
-                    throw new JsonException($"{typeof(<#= Type #>)} converter does not found.");
+                    throw new System.Text.Json.JsonException($"{typeof(<#= Type #>)} converter does not found.");
                 }
             }
 
@@ -468,8 +474,24 @@ namespace <#= Namespace #>
             {
             }
         }
-
 <# } #>
+
+<# if (HasFlag(UnitGenerateOptions.NewtonsoftJsonConvert)) { #> 
+        // UnitGenerateOptions.NewtonsoftJsonConverter
+        private class <#= Name #>NewtonsoftJsonConverter : Newtonsoft.Json.JsonConverter<<#= Name #>>
+        {
+            public override void WriteJson(JsonWriter writer, <#= Name #> value, Newtonsoft.Json.JsonSerializer serializer)
+            {
+                writer.WriteValue(value.value);
+            }
+
+            public override <#= Name #> ReadJson(JsonReader reader, Type objectType, <#= Name #> existingValue, bool hasExistingValue, Newtonsoft.Json.JsonSerializer serializer)
+            {
+                return new <#= Name #>(serializer.Deserialize<<#= Type #>>(reader));
+            }
+        }
+<# } #>
+
         // Default
         private class <#= Name #>TypeConverter : System.ComponentModel.TypeConverter
         {

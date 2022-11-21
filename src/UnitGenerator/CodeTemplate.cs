@@ -551,9 +551,13 @@ if (IsSupportUtf8Formatter()) {
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(">\r\n        {\r\n            public override void WriteJson(JsonWriter writer, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
-            this.Write(" value, Newtonsoft.Json.JsonSerializer serializer)\r\n            {\r\n              " +
-                    "  writer.WriteValue(value.value);\r\n            }\r\n\r\n            public override " +
-                    "");
+            this.Write(" value, Newtonsoft.Json.JsonSerializer serializer)\r\n            {\r\n");
+if (IsUlid()) { 
+            this.Write("                writer.WriteValue(value.ToString());\r\n");
+ } else { 
+            this.Write("                writer.WriteValue(value.value);\r\n");
+ } 
+            this.Write("            }\r\n\r\n            public override ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));
             this.Write(" ReadJson(JsonReader reader, Type objectType, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Name));

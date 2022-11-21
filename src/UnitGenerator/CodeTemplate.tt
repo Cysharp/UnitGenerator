@@ -482,7 +482,11 @@ namespace <#= Namespace #>
         {
             public override void WriteJson(JsonWriter writer, <#= Name #> value, Newtonsoft.Json.JsonSerializer serializer)
             {
+<#if (IsUlid()) { #>
+                writer.WriteValue(value.ToString());
+<# } else { #>
                 writer.WriteValue(value.value);
+<# } #>
             }
 
             public override <#= Name #> ReadJson(JsonReader reader, Type objectType, <#= Name #> existingValue, bool hasExistingValue, Newtonsoft.Json.JsonSerializer serializer)

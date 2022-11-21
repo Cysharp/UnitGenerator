@@ -351,7 +351,7 @@ public static bool operator <=(in T x, in T y) => x.value <= y.value;
 
 Without implements `>`, `<`, `>=`, `<=` operators. For example, useful for Guid.
 
-```csharpd
+```csharp
 [UnitOf(typeof(Guid), UnitGenerateOptions.Comparable | UnitGenerateOptions.WithoutComparisonOperator)]
 public readonly partial struct FooId { }
 ```

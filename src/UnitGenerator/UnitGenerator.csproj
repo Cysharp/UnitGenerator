@@ -41,28 +41,6 @@
 
     <ItemGroup>
         <None Include="Icon.png" Pack="true" PackagePath="/" />
-
-        <None Update="CodeTemplate.tt">
-            <Generator>TextTemplatingFilePreprocessor</Generator>
-            <LastGenOutput>CodeTemplate.cs</LastGenOutput>
-        </None>
-        <None Update="UnitOfAttributeTemplate.tt">
-            <Generator>TextTemplatingFilePreprocessor</Generator>
-            <LastGenOutput>UnitOfAttributeTemplate.cs</LastGenOutput>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Update="CodeTemplate.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>CodeTemplate.tt</DependentUpon>
-        </Compile>
-        <Compile Update="UnitOfAttributeTemplate.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>UnitOfAttributeTemplate.tt</DependentUpon>
-        </Compile>
     </ItemGroup>
 
     <ItemGroup>

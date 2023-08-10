@@ -17,12 +17,12 @@ using System;namespace FileGenerate
         {
             return value.value;
         }
-        
+
         public static implicit operator B(string value)
         {
             return new B(value);
         }
-        
+
         public bool Equals(B other)
         {
             return value.Equals(other.value);
@@ -48,12 +48,12 @@ using System;namespace FileGenerate
         {
             return value.GetHashCode();
         }
-        
+
         public override string ToString()
         {
             return value.ToString();
         }
-        
+
         public static bool operator ==(in B x, in B y)
         {
             return x.value.Equals(y.value);

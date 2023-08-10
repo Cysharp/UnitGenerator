@@ -236,12 +236,12 @@ namespace {{ns}}
         {
             return value.value;
         }
-        
+
         public static {{convertModifier}} operator {{unitTypeName}}({{innerTypeName}} value)
         {
             return new {{unitTypeName}}(value);
         }
-        
+
         public bool Equals({{unitTypeName}} other)
         {
             return value.Equals(other.value);
@@ -267,7 +267,7 @@ namespace {{ns}}
         {
             return value.GetHashCode();
         }
-        
+
 """);
             if (prop.ToStringFormat is { } format)
             {
@@ -276,7 +276,7 @@ namespace {{ns}}
         {
             return string.Format({{format}}, value);
         }
-        
+
 """);
             }
             else
@@ -286,7 +286,7 @@ namespace {{ns}}
         {
             return value.ToString();
         }
-        
+
 """);
             }
             sb.AppendLine($$"""
@@ -333,7 +333,7 @@ namespace {{ns}}
         {
             return new {{unitTypeName}}(Ulid.NewUlid());
         }
-        
+
 """);
             }
             
@@ -363,7 +363,7 @@ namespace {{ns}}
                 return false;
             }
         }
-        
+   
 """);
                 }
                 else
@@ -373,7 +373,7 @@ namespace {{ns}}
         {
             return new {{unitTypeName}}({{innerTypeName}}.Parse(s));
         }
-        
+ 
         public static bool TryParse(string s, out {{unitTypeName}} result)
         {
             if ({{innerTypeName}}.TryParse(s, out var r))
@@ -585,7 +585,7 @@ namespace {{ns}}
                     throw new JsonException($"{typeof({{innerTypeName}})} converter does not found.");
                 }
             }
-        
+
             public override {{unitTypeName}} Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 var converter = options.GetConverter(typeof({{innerTypeName}})) as JsonConverter<{{innerTypeName}}>;
@@ -598,8 +598,8 @@ namespace {{ns}}
                     throw new JsonException($"{typeof({{innerTypeName}})} converter does not found.");
                 }
             }
-        
-""");                
+
+""");
                 if (prop.HasFlag(UnitGenerateOptions.JsonConverterDictionaryKeySupport))
                 {
                     if (prop.IsSupportUtf8Formatter())
@@ -617,7 +617,7 @@ namespace {{ns}}
                     writer.WritePropertyName(value.value.ToString());
                 }
             }
-            
+
             public override {{unitTypeName}} ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 if (System.Buffers.Text.Utf8Parser.TryParse(reader.ValueSpan, out {{innerTypeName}} value, out var consumed))
@@ -629,8 +629,8 @@ namespace {{ns}}
                     return new {{unitTypeName}}({{innerTypeName}}.Parse(reader.GetString()));
                 }
             }
-            
-""");            
+
+""");
                     }
                     else if (prop.IsUlid())
                     {
@@ -639,13 +639,13 @@ namespace {{ns}}
             {
                 writer.WritePropertyName(value.value.ToString());
             }
-        
+    
             public override {{unitTypeName}} ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 return new {{unitTypeName}}({{innerTypeName}}.Parse(reader.GetString()));
             }
-            
-""");            
+   
+""");
                     }
                     else if (prop.IsString())
                     {
@@ -654,12 +654,12 @@ namespace {{ns}}
             {
                 writer.WritePropertyName(value.value.ToString());
             }
-            
+
             public override {{unitTypeName}} ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 return new {{unitTypeName}}(reader.GetString());            
             }
-            
+  
 """);
                     }
                     else
@@ -669,19 +669,19 @@ namespace {{ns}}
             {
                 writer.WritePropertyName(value.value.ToString());
             }
-            
+
             public override {{unitTypeName}} ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 return new {{unitTypeName}}({{innerTypeName}}.Parse(reader.GetString()));
             }
-            
-""");            
+
+""");  
                     }
                 } // End JsonConverterDictionaryKeySupport
                     
                 sb.AppendLine($$"""
         }
-    
+
 """);
             } // End JsonConverter
 
@@ -728,7 +728,7 @@ namespace {{ns}}
         {
             Dapper.SqlMapper.AddTypeHandler(new {{unitTypeName}}.{{unitTypeName}}TypeHandler());
         }
-    
+
 """);
             } // End DapperTypeHandler
 

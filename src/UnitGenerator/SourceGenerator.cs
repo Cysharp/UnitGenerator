@@ -267,7 +267,7 @@ namespace {{ns}}
                 return value.Equals(({{innerTypeName}})obj);
             }
 
-           return value.Equals(obj);
+            return value.Equals(obj);
         }
 
         public override int GetHashCode()

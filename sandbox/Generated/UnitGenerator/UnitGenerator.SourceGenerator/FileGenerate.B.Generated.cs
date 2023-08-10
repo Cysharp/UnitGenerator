@@ -3,11 +3,10 @@
 // </auto-generated>
 #pragma warning disable CS8669
 using System;
-
 namespace FileGenerate
 {
     [System.ComponentModel.TypeConverter(typeof(BTypeConverter))]
-    public readonly partial struct B : IEquatable<B> 
+    readonly partial struct B : IEquatable<B>
     {
         readonly string value;
 
@@ -17,8 +16,7 @@ namespace FileGenerate
         {
             this.value = value;
         }
-
-
+        
         public static explicit operator string(B value)
         {
             return value.value;
@@ -57,7 +55,7 @@ namespace FileGenerate
 
         public override string ToString()
         {
-            return "B(" + value + ")";
+            return value.ToString();
         }
 
         public static bool operator ==(in B x, in B y)
@@ -69,15 +67,6 @@ namespace FileGenerate
         {
             return !x.value.Equals(y.value);
         }
-
-
-
-
-
-
-
-
-
 
         // Default
         private class BTypeConverter : System.ComponentModel.TypeConverter

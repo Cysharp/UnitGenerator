@@ -3,11 +3,10 @@
 // </auto-generated>
 #pragma warning disable CS8669
 using System;
-
 namespace FileGenerate
 {
     [System.ComponentModel.TypeConverter(typeof(ATypeConverter))]
-    public readonly partial struct A : IEquatable<A> 
+    readonly partial struct A : IEquatable<A>
     {
         readonly int value;
 
@@ -17,8 +16,7 @@ namespace FileGenerate
         {
             this.value = value;
         }
-
-
+        
         public static explicit operator int(A value)
         {
             return value.value;
@@ -47,7 +45,7 @@ namespace FileGenerate
                 return value.Equals((int)obj);
             }
 
-            return value.Equals(obj);
+           return value.Equals(obj);
         }
 
         public override int GetHashCode()
@@ -57,7 +55,7 @@ namespace FileGenerate
 
         public override string ToString()
         {
-            return "A(" + value + ")";
+            return value.ToString();
         }
 
         public static bool operator ==(in A x, in A y)
@@ -69,15 +67,6 @@ namespace FileGenerate
         {
             return !x.value.Equals(y.value);
         }
-
-
-
-
-
-
-
-
-
 
         // Default
         private class ATypeConverter : System.ComponentModel.TypeConverter

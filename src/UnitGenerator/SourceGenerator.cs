@@ -164,13 +164,13 @@ namespace UnitGenerator
 // </auto-generated>
 #pragma warning disable CS8669
 using System;
+
 """);
             if (prop.HasFlag(UnitGenerateOptions.MessagePackFormatter))
             {
                 sb.AppendLine("""
 using MessagePack;
 using MessagePack.Formatters;
-
 """);
             }
             if (prop.HasFlag(UnitGenerateOptions.JsonConverter))

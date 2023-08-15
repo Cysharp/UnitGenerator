@@ -165,7 +165,7 @@ namespace UnitGenerator
     }
     
 #if NET7_0_OR_GREATER
-   internal static class AsNumberT> where T : INumber<T>
+   internal static class AsNumber<T> where T : INumber<T>
    {
         public static T One => T.One;
         public static int Radix => T.Radix;
@@ -194,6 +194,12 @@ namespace UnitGenerator
         public static T MaxMagnitudeNumber(T x, T y) => T.MaxMagnitudeNumber(x, y);
         public static T MinMagnitude(T x, T y) => T.MinMagnitude(x, y);
         public static T MinMagnitudeNumber(T x, T y) => T.MinMagnitudeNumber(x, y);
+        public static bool TryConvertFromChecked<TOther>(TOther value, out T result) => T.TryConvertFromChecked(value, out result);
+        public static bool TryConvertFromSaturating<TOther>(TOther value, out T result) => T.TryConvertFromSaturating(value, out result);
+        public static bool TryConvertFromTruncating<TOther>(TOther value, out T result) => T.TryConvertFromTruncating(value, out result);
+        public static bool TryConvertToChecked<TOther>(T value, out TOther result) => T.TryConvertToChecked(value, out result);
+        public static bool TryConvertToSaturating<TOther>(T value, out TOther result) => T.TryConvertToSaturating(value, out result);
+        public static bool TryConvertToTruncating<TOther>(T value, out TOther result) => T.TryConvertToTruncating(value, out result);
    }
 #endif    
 }
@@ -613,7 +619,7 @@ namespace {{ns}}
                 {
                     sb.AppendLine($$"""
 #if NET7_0_OR_GREATER
-        public static {{unitTypeName}} AdditiveIdentity => new(global::UnitGenerator.AsNumber{{innerTypeName}}>.AdditiveIdentity);
+        public static {{unitTypeName}} AdditiveIdentity => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.AdditiveIdentity);
 #endif
 
 """);
@@ -650,7 +656,7 @@ namespace {{ns}}
                 {
                     sb.AppendLine($$"""
 #if NET7_0_OR_GREATER
-        public static {{unitTypeName}} MultiplicativeIdentity => new(global::UnitGenerator.AsNumber{{innerTypeName}}>.MultiplicativeIdentity);
+        public static {{unitTypeName}} MultiplicativeIdentity => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.MultiplicativeIdentity);
 #endif
         public static {{unitTypeName}} operator +({{unitTypeName}} value) => new(({{innerTypeName}})(+value.value));
         public static {{unitTypeName}} operator -({{unitTypeName}} value) => new(({{innerTypeName}})(-value.value));
@@ -712,6 +718,63 @@ namespace {{ns}}
 """);
                 }
             } // End ArithmeticOperator
+
+            if (prop.HasFlag(UnitGenerateOptions.ValueArithmeticOperator))
+            {
+                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperator.Addition))
+                {
+                       sb.AppendLine($$"""
+        public static {{unitTypeName}} operator +({{unitTypeName}} x, {{innerTypeName}} y)
+        {
+            checked
+            {
+                return new {{unitTypeName}}(({{innerTypeName}})(x.value + y));
+            }
+        }
+
+""");
+                }
+                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperator.Subtraction))
+                {
+                        sb.AppendLine($$"""
+        public static {{unitTypeName}} operator -({{unitTypeName}} x, {{innerTypeName}} y)
+        {
+            checked
+            {
+                return new {{unitTypeName}}(({{innerTypeName}})(x.value - y));
+            }
+        }
+
+""");
+                }
+                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperator.Multiply))
+                {
+                       sb.AppendLine($$"""
+        public static {{unitTypeName}} operator *({{unitTypeName}} x, {{innerTypeName}} y)
+        {
+            checked
+            {
+                return new {{unitTypeName}}(({{innerTypeName}})(x.value * y));
+            }
+        }
+
+""");
+                }
+                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperator.Division))
+                {
+                        sb.AppendLine($$"""
+
+        public static {{unitTypeName}} operator /({{unitTypeName}} x, {{innerTypeName}} y)
+        {
+            checked
+            {
+                return new {{unitTypeName}}(({{innerTypeName}})(x.value / y));
+            }
+        }
+
+""");
+                }
+            } // End ValueArithmeticOperator
 
             if (prop.IsNumber() || prop.HasFlag(UnitGenerateOptions.Comparable))
             {
@@ -815,60 +878,78 @@ namespace {{ns}}
 
         // INumberBase<T>
         
-        public static {{unitTypeName}} One => new(global::UnitGenerator.AsNumber{{innerTypeName}}>.One);
-        public static int Radix => global::UnitGenerator.AsNumber{{innerTypeName}}>.Radix;
-        public static {{unitTypeName}} Zero => new(global::UnitGenerator.AsNumber{{innerTypeName}}>.Zero);
-        public static {{unitTypeName}} Abs({{unitTypeName}} value) => new(global::UnitGenerator.AsNumber{{innerTypeName}}>.Abs(value.value));
-        public static bool IsCanonical({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsCanonical(value.value);
-        public static bool IsComplexNumber({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsComplexNumber(value.value);
-        public static bool IsEvenInteger({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsEvenInteger(value.value);
-        public static bool IsFinite({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsFinite(value.value);
-        public static bool IsImaginaryNumber({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsImaginaryNumber(value.value);
-        public static bool IsInfinity({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsInfinity(value.value);
-        public static bool IsInteger({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsInteger(value.value);
-        public static bool IsNaN({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsNaN(value.value);
-        public static bool IsNegative({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsNegative(value.value);
-        public static bool IsNegativeInfinity({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsNegativeInfinity(value.value);
-        public static bool IsNormal({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsNormal(value.value);
-        public static bool IsOddInteger({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsOddInteger(value.value);
-        public static bool IsPositive({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsPositive(value.value);
-        public static bool IsPositiveInfinity({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsPositiveInfinity(value.value);
-        public static bool IsRealNumber({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsRealNumber(value.value);
-        public static bool IsSubnormal({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsSubnormal(value.value);
-        public static bool IsZero({{unitTypeName}} value) => global::UnitGenerator.AsNumber{{innerTypeName}}>.IsZero(value.value);
-        public static {{unitTypeName}} MaxMagnitude({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber{{innerTypeName}}>.MaxMagnitude(x.value, y.value));
-        public static {{unitTypeName}} MaxMagnitudeNumber({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber{{innerTypeName}}>.MaxMagnitudeNumber(x.value, y.value));
-        public static {{unitTypeName}} MinMagnitude({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber{{innerTypeName}}>.MinMagnitude(x.value, y.value));
-        public static {{unitTypeName}} MinMagnitudeNumber({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber{{innerTypeName}}>.MinMagnitudeNumber(x.value, y.value));
+        public static {{unitTypeName}} One => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.One);
+        public static int Radix => global::UnitGenerator.AsNumber<{{innerTypeName}}>.Radix;
+        public static {{unitTypeName}} Zero => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.Zero);
+        public static {{unitTypeName}} Abs({{unitTypeName}} value) => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.Abs(value.value));
+        public static bool IsCanonical({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsCanonical(value.value);
+        public static bool IsComplexNumber({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsComplexNumber(value.value);
+        public static bool IsEvenInteger({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsEvenInteger(value.value);
+        public static bool IsFinite({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsFinite(value.value);
+        public static bool IsImaginaryNumber({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsImaginaryNumber(value.value);
+        public static bool IsInfinity({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsInfinity(value.value);
+        public static bool IsInteger({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsInteger(value.value);
+        public static bool IsNaN({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsNaN(value.value);
+        public static bool IsNegative({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsNegative(value.value);
+        public static bool IsNegativeInfinity({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsNegativeInfinity(value.value);
+        public static bool IsNormal({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsNormal(value.value);
+        public static bool IsOddInteger({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsOddInteger(value.value);
+        public static bool IsPositive({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsPositive(value.value);
+        public static bool IsPositiveInfinity({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsPositiveInfinity(value.value);
+        public static bool IsRealNumber({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsRealNumber(value.value);
+        public static bool IsSubnormal({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsSubnormal(value.value);
+        public static bool IsZero({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsZero(value.value);
+        public static {{unitTypeName}} MaxMagnitude({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.MaxMagnitude(x.value, y.value));
+        public static {{unitTypeName}} MaxMagnitudeNumber({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.MaxMagnitudeNumber(x.value, y.value));
+        public static {{unitTypeName}} MinMagnitude({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.MinMagnitude(x.value, y.value));
+        public static {{unitTypeName}} MinMagnitudeNumber({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.MinMagnitudeNumber(x.value, y.value));
 
         public static bool TryConvertFromChecked<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther> 
         {
-            throw new NotSupportedException();
+            if (global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertFromChecked(value, out var innerResult))
+            {
+                result = new {{unitTypeName}}(innerResult);
+                return true;
+            }
+            result = default;
+            return false;
         }
 
         public static bool TryConvertFromSaturating<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther> 
         {
-            throw new NotSupportedException();
+            if (global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertFromSaturating(value, out var innerResult))
+            {
+                result = new {{unitTypeName}}(innerResult);
+                return true;
+            }
+            result = default;
+            return false;
         }
 
         public static bool TryConvertFromTruncating<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther>
         {
-            throw new NotSupportedException();
+            if (global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertFromTruncating(value, out var innerResult))
+            {
+                result = new {{unitTypeName}}(innerResult);
+                return true;
+            }
+            result = default;
+            return false;
         }
 
         public static bool TryConvertToChecked<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther>
         {
-            throw new NotSupportedException();
+            return global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertToChecked(value.value, out result);
         }
 
         public static bool TryConvertToSaturating<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther> 
         {
-            throw new NotSupportedException();
+            return global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertToSaturating(value.value, out result);
         }
 
         public static bool TryConvertToTruncating<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther>
         {
-            throw new NotSupportedException();
+            return global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertToTruncating(value.value, out result);
         }
         
         public static {{unitTypeName}} Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => new {{unitTypeName}}({{innerTypeName}}.Parse(s, style, provider));
@@ -1186,6 +1267,13 @@ namespace {{ns}}
             public bool HasArithmeticOperator(UnitGenerateArithmeticOperator op)
             {
                 return HasFlag(UnitGenerateOptions.ArithmeticOperator) &&
+                       (ArithmeticOperator == UnitGenerateArithmeticOperator.Number ||
+                        ArithmeticOperator.HasFlag(op));
+            }
+
+            public bool HasValueArithmeticOperator(UnitGenerateArithmeticOperator op)
+            {
+                return HasFlag(UnitGenerateOptions.ValueArithmeticOperator) &&
                        (ArithmeticOperator == UnitGenerateArithmeticOperator.Number ||
                         ArithmeticOperator.HasFlag(op));
             }

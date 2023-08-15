@@ -56,7 +56,7 @@ namespace UnitGenerator
     }
     
 #if NET7_0_OR_GREATER
-   internal static class NumberProxy<T> where T : INumber<T>
+   internal static class AsNumber<T> where T : INumber<T>
    {
         public static T One => T.One;
         public static int Radix => T.Radix;

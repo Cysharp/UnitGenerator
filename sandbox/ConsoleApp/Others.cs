@@ -5,17 +5,11 @@ using UnitGenerator;
 
 namespace ConsoleApp
 {
-    internal static class NumberProxy<T> where T : INumber<T>
-    {
-        private static T One() => T.One;
-    }
-
     [UnitOf(typeof(Guid), UnitGenerateOptions.ParseMethod | UnitGenerateOptions.Validate | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter)]
     public readonly partial struct GD
     {
         private partial void Validate()
         {
-            UnitGenerator.NumberProxy<int>.One();
             _ = AsPrimitive();
         }
     }

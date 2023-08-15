@@ -35,8 +35,7 @@ public readonly partial struct BarId { }
 
 namespace Sample
 {
-
-    [UnitOf(typeof(int), UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.JsonConverterDictionaryKeySupport)]
+    [UnitOf(typeof(int), UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.JsonConverterDictionaryKeySupport)]
     public readonly partial struct Hp
     {
         // public static Hp operator +(in Hp x, in Hp y) => new Hp(checked((int)(x.value + y.value)));
@@ -83,7 +82,7 @@ namespace Sample
             _ = AsPrimitive();
         }
     }
-    
+
     [UnitOf(typeof(string), UnitGenerateOptions.ParseMethod)]
     public readonly partial struct StringId { }
 }

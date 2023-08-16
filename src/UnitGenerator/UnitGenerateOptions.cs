@@ -24,7 +24,7 @@ namespace UnitGenerator
     }
 
     [Flags]
-    internal enum UnitGenerateArithmeticOperator
+    internal enum UnitGenerateArithmeticOperators
     {
         Number = 0,
         Addition = 1,

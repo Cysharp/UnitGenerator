@@ -36,6 +36,7 @@ namespace UnitGenerator
                     var prop = new UnitOfAttributeProperty();
 
                     if (attr.ArgumentList is null) goto ADD;
+
                     for (int i = 0; i < attr.ArgumentList.Arguments.Count; i++)
                     {
                         var arg = attr.ArgumentList.Arguments[i];
@@ -60,10 +61,20 @@ namespace UnitGenerator
                             var parsed = Enum.ToObject(typeof(UnitGenerateOptions), model.GetConstantValue(expr).Value);
                             prop.Options = (UnitGenerateOptions)parsed;
                         }
-                        else if (i == 2) // string toStringFormat
+                        else
                         {
-                            var format = model.GetConstantValue(expr).Value?.ToString();
-                            prop.ToStringFormat = format;
+                            var argName = arg.NameEquals?.Name.ToString();
+                            switch (argName)
+                            {
+                                case "ArithmeticOperators":
+                                    var parsed = Enum.ToObject(typeof(UnitGenerateArithmeticOperators), model.GetConstantValue(expr).Value);
+                                    prop.ArithmeticOperators = (UnitGenerateArithmeticOperators)parsed;
+                                    break;
+                                case "Format":
+                                    var format = model.GetConstantValue(expr).Value?.ToString();
+                                    prop.ToStringFormat = format;
+                                    break;
+                            }
                         }
                     }
 
@@ -122,7 +133,8 @@ namespace UnitGenerator
     {
         public Type Type { get; }
         public UnitGenerateOptions Options { get; }
-        public string Format { get; }
+        public UnitGenerateArithmeticOperators ArithmeticOperators { get; set; }
+        public string Format { get; set; }
 
         public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None, string toStringFormat = null)
         {
@@ -153,7 +165,7 @@ namespace UnitGenerator
     }
 
     [Flags]
-    internal enum UnitGenerateArithmeticOperator
+    internal enum UnitGenerateArithmeticOperators
     {
         Number = 0,
         Addition = 1,
@@ -194,12 +206,6 @@ namespace UnitGenerator
         public static T MaxMagnitudeNumber(T x, T y) => T.MaxMagnitudeNumber(x, y);
         public static T MinMagnitude(T x, T y) => T.MinMagnitude(x, y);
         public static T MinMagnitudeNumber(T x, T y) => T.MinMagnitudeNumber(x, y);
-        public static bool TryConvertFromChecked<TOther>(TOther value, out T result) => T.TryConvertFromChecked(value, out result);
-        public static bool TryConvertFromSaturating<TOther>(TOther value, out T result) => T.TryConvertFromSaturating(value, out result);
-        public static bool TryConvertFromTruncating<TOther>(TOther value, out T result) => T.TryConvertFromTruncating(value, out result);
-        public static bool TryConvertToChecked<TOther>(T value, out TOther result) => T.TryConvertToChecked(value, out result);
-        public static bool TryConvertToSaturating<TOther>(T value, out TOther result) => T.TryConvertToSaturating(value, out result);
-        public static bool TryConvertToTruncating<TOther>(T value, out TOther result) => T.TryConvertToTruncating(value, out result);
    }
 #endif    
 }
@@ -307,39 +313,39 @@ namespace {{ns}}
                 if (prop.HasFlag(UnitGenerateOptions.ArithmeticOperator))
                 {
                     sb.AppendLine("#if NET7_0_OR_GREATER");
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Addition))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Addition))
                     {
                         sb.AppendLine($$"""
         , IAdditionOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
 """);
                     }
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Subtraction))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Subtraction))
                     {
                         sb.AppendLine($$"""
         , ISubtractionOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
 """);
                     }
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Addition |
-                                                   UnitGenerateArithmeticOperator.Subtraction))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Addition) ||
+                        prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Subtraction))
                     {
                         sb.AppendLine($$"""
         , IAdditiveIdentity<{{unitTypeName}}, {{unitTypeName}}>
 """);
                     }
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Multiply))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Multiply))
                     {
                         sb.AppendLine($$"""
         , IMultiplyOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
 """);
                     }
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Division))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Division))
                     {
                         sb.AppendLine($$"""
         , IDivisionOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
 """);
                     }
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Multiply |
-                                                   UnitGenerateArithmeticOperator.Division))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Multiply) ||
+                        prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Division))
                     {
                         sb.AppendLine($$"""
         , IMultiplicativeIdentity<{{unitTypeName}}, {{unitTypeName}}>
@@ -347,13 +353,13 @@ namespace {{ns}}
         , IUnaryNegationOperators<{{unitTypeName}}, {{unitTypeName}}>
 """);
                     }
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Increment))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Increment))
                     {
                         sb.AppendLine($$"""
         , IIncrementOperators<{{unitTypeName}}>
 """);
                     }
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Decrement))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Decrement))
                     {
                         sb.AppendLine($$"""
         , IDecrementOperators<{{unitTypeName}}>
@@ -614,8 +620,8 @@ namespace {{ns}}
         // UnitGenerateOptions.ArithmeticOperator
         
 """);
-                if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Addition |
-                                               UnitGenerateArithmeticOperator.Subtraction))
+                if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Addition) ||
+                    prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Subtraction))
                 {
                     sb.AppendLine($$"""
 #if NET7_0_OR_GREATER
@@ -623,7 +629,7 @@ namespace {{ns}}
 #endif
 
 """);
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Addition))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Addition))
                     {
                        sb.AppendLine($$"""
         public static {{unitTypeName}} operator +({{unitTypeName}} x, {{unitTypeName}} y)
@@ -636,7 +642,7 @@ namespace {{ns}}
 
 """);
                     }
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Subtraction))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Subtraction))
                     {
                         sb.AppendLine($$"""
         public static {{unitTypeName}} operator -({{unitTypeName}} x, {{unitTypeName}} y)
@@ -651,8 +657,8 @@ namespace {{ns}}
                     }
                 } // End Addition, Subtraction
 
-                if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Multiply |
-                                               UnitGenerateArithmeticOperator.Division))
+                if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Multiply) ||
+                    prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Division))
                 {
                     sb.AppendLine($$"""
 #if NET7_0_OR_GREATER
@@ -662,7 +668,7 @@ namespace {{ns}}
         public static {{unitTypeName}} operator -({{unitTypeName}} value) => new(({{innerTypeName}})(-value.value));
 
 """);
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Multiply))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Multiply))
                     {
                        sb.AppendLine($$"""
         public static {{unitTypeName}} operator *({{unitTypeName}} x, {{unitTypeName}} y)
@@ -675,7 +681,7 @@ namespace {{ns}}
 
 """);
                     }
-                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Division))
+                    if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Division))
                     {
                         sb.AppendLine($$"""
 
@@ -691,7 +697,7 @@ namespace {{ns}}
                     }
                 } // End Multiply, Division
 
-                if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Increment))
+                if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Increment))
                 {
                     sb.AppendLine($$"""
         public static {{unitTypeName}} operator ++({{unitTypeName}} x)
@@ -704,7 +710,7 @@ namespace {{ns}}
 
 """);
                 }
-                if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperator.Decrement))
+                if (prop.HasArithmeticOperator(UnitGenerateArithmeticOperators.Decrement))
                 {
                     sb.AppendLine($$"""
         public static {{unitTypeName}} operator --({{unitTypeName}} x)
@@ -721,7 +727,11 @@ namespace {{ns}}
 
             if (prop.HasFlag(UnitGenerateOptions.ValueArithmeticOperator))
             {
-                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperator.Addition))
+                sb.AppendLine("""
+        // UnitGenerateOptions.ValueArithmeticOperator
+        
+""");
+                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperators.Addition))
                 {
                        sb.AppendLine($$"""
         public static {{unitTypeName}} operator +({{unitTypeName}} x, {{innerTypeName}} y)
@@ -734,7 +744,7 @@ namespace {{ns}}
 
 """);
                 }
-                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperator.Subtraction))
+                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperators.Subtraction))
                 {
                         sb.AppendLine($$"""
         public static {{unitTypeName}} operator -({{unitTypeName}} x, {{innerTypeName}} y)
@@ -747,7 +757,7 @@ namespace {{ns}}
 
 """);
                 }
-                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperator.Multiply))
+                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperators.Multiply))
                 {
                        sb.AppendLine($$"""
         public static {{unitTypeName}} operator *({{unitTypeName}} x, {{innerTypeName}} y)
@@ -760,7 +770,7 @@ namespace {{ns}}
 
 """);
                 }
-                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperator.Division))
+                if (prop.HasValueArithmeticOperator(UnitGenerateArithmeticOperators.Division))
                 {
                         sb.AppendLine($$"""
 
@@ -906,52 +916,34 @@ namespace {{ns}}
 
         public static bool TryConvertFromChecked<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther> 
         {
-            if (global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertFromChecked(value, out var innerResult))
-            {
-                result = new {{unitTypeName}}(innerResult);
-                return true;
-            }
-            result = default;
-            return false;
+            throw new NotSupportedException();
         }
 
         public static bool TryConvertFromSaturating<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther> 
         {
-            if (global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertFromSaturating(value, out var innerResult))
-            {
-                result = new {{unitTypeName}}(innerResult);
-                return true;
-            }
-            result = default;
-            return false;
+            throw new NotSupportedException();
         }
 
         public static bool TryConvertFromTruncating<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther>
         {
-            if (global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertFromTruncating(value, out var innerResult))
-            {
-                result = new {{unitTypeName}}(innerResult);
-                return true;
-            }
-            result = default;
-            return false;
+            throw new NotSupportedException();
         }
 
         public static bool TryConvertToChecked<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther>
         {
-            return global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertToChecked(value.value, out result);
+            throw new NotSupportedException();
         }
 
         public static bool TryConvertToSaturating<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther> 
         {
-            return global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertToSaturating(value.value, out result);
+            throw new NotSupportedException();
         }
 
         public static bool TryConvertToTruncating<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther>
         {
-            return global::UnitGenerator.AsNumber<{{innerTypeName}}>.TryConvertToTruncating(value.value, out result);
+            throw new NotSupportedException();
         }
-        
+
         public static {{unitTypeName}} Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => new {{unitTypeName}}({{innerTypeName}}.Parse(s, style, provider));
         public static {{unitTypeName}} Parse(string s, NumberStyles style, IFormatProvider? provider) => new {{unitTypeName}}({{innerTypeName}}.Parse(s, style, provider)); 
 
@@ -1175,6 +1167,7 @@ namespace {{ns}}
 
             sb.AppendLine($$"""
         // Default
+        
         private class {{unitTypeName}}TypeConverter : System.ComponentModel.TypeConverter
         {
             private static readonly Type WrapperType = typeof({{unitTypeName}});
@@ -1250,7 +1243,7 @@ namespace {{ns}}
         {
             public ITypeSymbol Type { get; set; }
             public UnitGenerateOptions Options { get; set; }
-            public UnitGenerateArithmeticOperator ArithmeticOperator { get; set; }
+            public UnitGenerateArithmeticOperators ArithmeticOperators { get; set; }
             public string? ToStringFormat { get; set; }
             public string TypeName => Type.ToString();
 
@@ -1262,20 +1255,20 @@ namespace {{ns}}
             public bool HasFlag(UnitGenerateOptions options) => Options.HasFlag(options);
 
             public bool IsNumber() => HasFlag(UnitGenerateOptions.ArithmeticOperator) &&
-                                      ArithmeticOperator == UnitGenerateArithmeticOperator.Number;
+                                      ArithmeticOperators == UnitGenerateArithmeticOperators.Number;
 
-            public bool HasArithmeticOperator(UnitGenerateArithmeticOperator op)
+            public bool HasArithmeticOperator(UnitGenerateArithmeticOperators op)
             {
                 return HasFlag(UnitGenerateOptions.ArithmeticOperator) &&
-                       (ArithmeticOperator == UnitGenerateArithmeticOperator.Number ||
-                        ArithmeticOperator.HasFlag(op));
+                       (ArithmeticOperators == UnitGenerateArithmeticOperators.Number ||
+                        ArithmeticOperators.HasFlag(op));
             }
 
-            public bool HasValueArithmeticOperator(UnitGenerateArithmeticOperator op)
+            public bool HasValueArithmeticOperator(UnitGenerateArithmeticOperators op)
             {
                 return HasFlag(UnitGenerateOptions.ValueArithmeticOperator) &&
-                       (ArithmeticOperator == UnitGenerateArithmeticOperator.Number ||
-                        ArithmeticOperator.HasFlag(op));
+                       (ArithmeticOperators == UnitGenerateArithmeticOperators.Number ||
+                        ArithmeticOperators.HasFlag(op));
             }
 
             public DbType GetDbType()

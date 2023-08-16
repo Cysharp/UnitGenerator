@@ -74,6 +74,7 @@ namespace FileGenerate
         }
 
         // Default
+        
         private class ATypeConverter : System.ComponentModel.TypeConverter
         {
             private static readonly Type WrapperType = typeof(A);

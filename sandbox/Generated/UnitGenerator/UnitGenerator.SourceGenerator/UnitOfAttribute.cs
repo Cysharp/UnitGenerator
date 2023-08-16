@@ -13,7 +13,8 @@ namespace UnitGenerator
     {
         public Type Type { get; }
         public UnitGenerateOptions Options { get; }
-        public string Format { get; }
+        public UnitGenerateArithmeticOperators ArithmeticOperators { get; set; }
+        public string Format { get; set; }
 
         public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None, string toStringFormat = null)
         {
@@ -44,7 +45,7 @@ namespace UnitGenerator
     }
 
     [Flags]
-    internal enum UnitGenerateArithmeticOperator
+    internal enum UnitGenerateArithmeticOperators
     {
         Number = 0,
         Addition = 1,

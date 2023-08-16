@@ -60,7 +60,14 @@ public readonly partial struct Hp { }
 // -- generates
 
 [System.ComponentModel.TypeConverter(typeof(HpTypeConverter))]
-public readonly partial struct Hp : IEquatable<Hp> , IComparable<Hp>
+public readonly partial struct Hp
+#if NET7_0_OR_GREATER
+    : INumber<A>
+#else
+    : IEquatable<A>
+    , IComparable<A>
+    , IComparable
+#endif
 {
     readonly int value;
 
@@ -81,25 +88,38 @@ public readonly partial struct Hp : IEquatable<Hp> , IComparable<Hp>
     private class HpTypeConverter : System.ComponentModel.TypeConverter { /* snip... */ }
 
     // UnitGenerateOptions.ArithmeticOperator
-    public static Hp operator +(in Hp x, in Hp y) => new Hp(checked((int)(x.value + y.value)));
-    public static Hp operator -(in Hp x, in Hp y) => new Hp(checked((int)(x.value - y.value)));
-    public static Hp operator *(in Hp x, in Hp y) => new Hp(checked((int)(x.value * y.value)));
-    public static Hp operator /(in Hp x, in Hp y) => new Hp(checked((int)(x.value / y.value)));
+    public static Hp operator +(Hp x, Hp y) => new Hp(checked((int)(x.value + y.value)));
+    public static Hp operator -(Hp x, Hp y) => new Hp(checked((int)(x.value - y.value)));
+    public static Hp operator *(Hp x, Hp y) => new Hp(checked((int)(x.value * y.value)));
+    public static Hp operator /(Hp x, Hp y) => new Hp(checked((int)(x.value / y.value)));
+    public static Hp operator ++(Hp x) => new Hp(checked((int)(x.value + 1)));
+    public static Hp operator --(Hp x) => new Hp(checked((int)(x.value - 1)));
+    public static Hp operator +(A value) => new((int)(+value.value));
+    public static Hp operator -(A value) => new((int)(-value.value));
+    
+    // In addition, .ArithmeticOperator option also generates all members of `System.Numerics.INumber<T>` by default.
+#if NET7_0_OR_GREATER
+    public static Hp AdditiveIdentity => new(global::UnitGenerator.AsNumber<int>.AdditiveIdentity);
+    public static Hp MultiplicativeIdentity => new(global::UnitGenerator.AsNumber<int>.MultiplicativeIdentity);
+    public static HP One => new(global::UnitGenerator.AsNumber<int>.One);
+    public static int Radix => global::UnitGenerator.AsNumber<int>.Radix;
+    public static Hp Zero => new(global::UnitGenerator.AsNumber<int>.Zero);
+    public static Hp Abs(Hp value) => new(global::UnitGenerator.AsNumber<int>.Abs(value.value));
+    // etc......
+#endif
 
     // UnitGenerateOptions.ValueArithmeticOperator
-    public static Hp operator ++(in Hp x) => new Hp(checked((int)(x.value + 1)));
-    public static Hp operator --(in Hp x) => new Hp(checked((int)(x.value - 1)));
-    public static Hp operator +(in Hp x, in int y) => new Hp(checked((int)(x.value + y)));
-    public static Hp operator -(in Hp x, in int y) => new Hp(checked((int)(x.value - y)));
-    public static Hp operator *(in Hp x, in int y) => new Hp(checked((int)(x.value * y)));
-    public static Hp operator /(in Hp x, in int y) => new Hp(checked((int)(x.value / y)));
+    public static Hp operator +(Hp x, in int y) => new Hp(checked((int)(x.value + y)));
+    public static Hp operator -(Hp x, in int y) => new Hp(checked((int)(x.value - y)));
+    public static Hp operator *(Hp x, in int y) => new Hp(checked((int)(x.value * y)));
+    public static Hp operator /(Hp x, in int y) => new Hp(checked((int)(x.value / y)));
 
     // UnitGenerateOptions.Comparable
     public int CompareTo(Hp other) => value.CompareTo(other.value);
-    public static bool operator >(in Hp x, in Hp y) => x.value > y.value;
-    public static bool operator <(in Hp x, in Hp y) => x.value < y.value;
-    public static bool operator >=(in Hp x, in Hp y) => x.value >= y.value;
-    public static bool operator <=(in Hp x, in Hp y) => x.value <= y.value;
+    public static bool operator >(Hp x, Hp y) => x.value > y.value;
+    public static bool operator <(Hp x, Hp y) => x.value < y.value;
+    public static bool operator >=(Hp x, Hp y) => x.value >= y.value;
+    public static bool operator <=(Hp x, Hp y) => x.value <= y.value;
 
     // UnitGenerateOptions.MinMaxMethod
     public static Hp Min(Hp x, Hp y) => new Hp(Math.Min(x.value, y.value));
@@ -193,7 +213,12 @@ namespace UnitGenerator
     [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
     internal class UnitOfAttribute : Attribute
     {
-        public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None, string toStringFormat = null)
+        public Type Type { get; }
+        public UnitGenerateOptions Options { get; }
+        public UnitArithmeticOperators ArithmeticOperators { get; set; }
+        public string ToStringFormat { get; set; }
+        
+        public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None)
     }
 }
 ```
@@ -241,7 +266,9 @@ public static GroupId NewGroupId();
 
 Second parameter `UnitGenerateOptions options` can configure which method to implement, default is `None`.
 
-Third parameter `strign toStringFormat` can configure `ToString` format. Default is null and output as $`{0}`.
+Optional named parameter: `ArithmeticOperators` can configure which generates operators specifically. (This can be used if UnitGenerateOptions.ArithmeticOperator is specified.)
+
+Optional named parameter: `ToStringFormat` can configure `ToString` format. Default is null and output as $`{0}`.
 
 ## UnitGenerateOptions
 
@@ -269,7 +296,13 @@ internal enum UnitGenerateOptions
 You can use this with `[UnitOf]`.
 
 ```csharp
-[UnitOf(typeof(int), UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.MinMaxMethod)]
+[UnitOf(
+    typeof(int), 
+    UnitGenerateOptions.ArithmeticOperator | 
+    UnitGenerateOptions.ValueArithmeticOperator | 
+    UnitGenerateOptions.Comparable | 
+    UnitGenerateOptions.MinMaxMethod,
+    ArithemticOperators = UnitGenerate)]
 public readonly partial struct Strength { }
 
 [UnitOf(typeof(DateTime), UnitGenerateOptions.Validate | UnitGenerateOptions.ParseMethod | UnitGenerateOptions.Comparable)]

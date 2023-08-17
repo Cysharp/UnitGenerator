@@ -2,7 +2,7 @@
 
 namespace UnitGenerator
 {
-    // same as Generated Options(check UnitOfAttributeTemplate.tt).
+    // same as Generated Options(check SourceGenerator.cs).
     [Flags]
     internal enum UnitGenerateOptions
     {
@@ -21,5 +21,17 @@ namespace UnitGenerator
         WithoutComparisonOperator = 1 << 11,
         JsonConverterDictionaryKeySupport = 1 << 12,
         Normalize = 1 << 13,
+    }
+
+    [Flags]
+    internal enum UnitArithmeticOperators
+    {
+        All = Addition | Subtraction | Multiply | Division | Increment | Decrement,
+        Addition = 1,
+        Subtraction = 1 << 1,
+        Multiply = 1 << 2,
+        Division = 1 << 3,
+        Increment = 1 << 4,
+        Decrement = 1 << 5,
     }
 }

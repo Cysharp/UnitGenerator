@@ -3,10 +3,18 @@
 // </auto-generated>
 #pragma warning disable CS8669
 using System;
+using System.Globalization;
+#if NET7_0_OR_GREATER
+using System.Numerics;
+#endif
 namespace FileGenerate
 {
     [System.ComponentModel.TypeConverter(typeof(BTypeConverter))]
-    readonly partial struct B : IEquatable<B>
+    readonly partial struct B 
+        : IEquatable<B>
+#if NET7_0_OR_GREATER
+        , IEqualityOperators<B, B, bool>
+#endif    
     {
         readonly string value;
 
@@ -47,6 +55,16 @@ namespace FileGenerate
 
             return value.Equals(obj);
         }
+        
+        public static bool operator ==(B x, B y)
+        {
+            return x.value.Equals(y.value);
+        }
+
+        public static bool operator !=(B x, B y)
+        {
+            return !x.value.Equals(y.value);
+        }
 
         public override int GetHashCode()
         {
@@ -58,17 +76,8 @@ namespace FileGenerate
             return value.ToString();
         }
 
-        public static bool operator ==(in B x, in B y)
-        {
-            return x.value.Equals(y.value);
-        }
-
-        public static bool operator !=(in B x, in B y)
-        {
-            return !x.value.Equals(y.value);
-        }
-
         // Default
+        
         private class BTypeConverter : System.ComponentModel.TypeConverter
         {
             private static readonly Type WrapperType = typeof(B);

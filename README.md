@@ -60,7 +60,25 @@ public readonly partial struct Hp { }
 // -- generates
 
 [System.ComponentModel.TypeConverter(typeof(HpTypeConverter))]
-public readonly partial struct Hp : IEquatable<Hp> , IComparable<Hp>
+public readonly partial struct Hp
+    : IEquatable<Hp>
+#if NET7_0_OR_GREATER
+    , IEqualityOperators<Hp, Hp, bool>
+#endif    
+    , IComparable<Hp>
+#if NET7_0_OR_GREATER
+    , IComparisonOperators<Hp, Hp, bool>
+#endif
+#if NET7_0_OR_GREATER
+    , IAdditionOperators<Hp, Hp, Hp>
+    , ISubtractionOperators<Hp, Hp, Hp>
+    , IMultiplyOperators<Hp, Hp, Hp>
+    , IDivisionOperators<Hp, Hp, Hp>
+    , IUnaryPlusOperators<Hp, Hp>
+    , IUnaryNegationOperators<Hp, Hp>
+    , IIncrementOperators<Hp>
+    , IDecrementOperators<Hp>
+#endif    
 {
     readonly int value;
 
@@ -81,25 +99,27 @@ public readonly partial struct Hp : IEquatable<Hp> , IComparable<Hp>
     private class HpTypeConverter : System.ComponentModel.TypeConverter { /* snip... */ }
 
     // UnitGenerateOptions.ArithmeticOperator
-    public static Hp operator +(in Hp x, in Hp y) => new Hp(checked((int)(x.value + y.value)));
-    public static Hp operator -(in Hp x, in Hp y) => new Hp(checked((int)(x.value - y.value)));
-    public static Hp operator *(in Hp x, in Hp y) => new Hp(checked((int)(x.value * y.value)));
-    public static Hp operator /(in Hp x, in Hp y) => new Hp(checked((int)(x.value / y.value)));
+    public static Hp operator +(Hp x, Hp y) => new Hp(checked((int)(x.value + y.value)));
+    public static Hp operator -(Hp x, Hp y) => new Hp(checked((int)(x.value - y.value)));
+    public static Hp operator *(Hp x, Hp y) => new Hp(checked((int)(x.value * y.value)));
+    public static Hp operator /(Hp x, Hp y) => new Hp(checked((int)(x.value / y.value)));
+    public static Hp operator ++(Hp x) => new Hp(checked((int)(x.value + 1)));
+    public static Hp operator --(Hp x) => new Hp(checked((int)(x.value - 1)));
+    public static Hp operator +(A value) => new((int)(+value.value));
+    public static Hp operator -(A value) => new((int)(-value.value));
 
     // UnitGenerateOptions.ValueArithmeticOperator
-    public static Hp operator ++(in Hp x) => new Hp(checked((int)(x.value + 1)));
-    public static Hp operator --(in Hp x) => new Hp(checked((int)(x.value - 1)));
-    public static Hp operator +(in Hp x, in int y) => new Hp(checked((int)(x.value + y)));
-    public static Hp operator -(in Hp x, in int y) => new Hp(checked((int)(x.value - y)));
-    public static Hp operator *(in Hp x, in int y) => new Hp(checked((int)(x.value * y)));
-    public static Hp operator /(in Hp x, in int y) => new Hp(checked((int)(x.value / y)));
+    public static Hp operator +(Hp x, in int y) => new Hp(checked((int)(x.value + y)));
+    public static Hp operator -(Hp x, in int y) => new Hp(checked((int)(x.value - y)));
+    public static Hp operator *(Hp x, in int y) => new Hp(checked((int)(x.value * y)));
+    public static Hp operator /(Hp x, in int y) => new Hp(checked((int)(x.value / y)));
 
     // UnitGenerateOptions.Comparable
     public int CompareTo(Hp other) => value.CompareTo(other.value);
-    public static bool operator >(in Hp x, in Hp y) => x.value > y.value;
-    public static bool operator <(in Hp x, in Hp y) => x.value < y.value;
-    public static bool operator >=(in Hp x, in Hp y) => x.value >= y.value;
-    public static bool operator <=(in Hp x, in Hp y) => x.value <= y.value;
+    public static bool operator >(Hp x, Hp y) => x.value > y.value;
+    public static bool operator <(Hp x, Hp y) => x.value < y.value;
+    public static bool operator >=(Hp x, Hp y) => x.value >= y.value;
+    public static bool operator <=(Hp x, Hp y) => x.value <= y.value;
 
     // UnitGenerateOptions.MinMaxMethod
     public static Hp Min(Hp x, Hp y) => new Hp(Math.Min(x.value, y.value));
@@ -193,7 +213,12 @@ namespace UnitGenerator
     [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
     internal class UnitOfAttribute : Attribute
     {
-        public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None, string toStringFormat = null)
+        public Type Type { get; }
+        public UnitGenerateOptions Options { get; }
+        public UnitArithmeticOperators ArithmeticOperators { get; set; }
+        public string ToStringFormat { get; set; }
+        
+        public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None) { ... }
     }
 }
 ```
@@ -241,7 +266,9 @@ public static GroupId NewGroupId();
 
 Second parameter `UnitGenerateOptions options` can configure which method to implement, default is `None`.
 
-Third parameter `strign toStringFormat` can configure `ToString` format. Default is null and output as $`{0}`.
+Optional named parameter: `ArithmeticOperators` can configure which generates operators specifically. Default is `Number`. (This can be used if UnitGenerateOptions.ArithmeticOperator is specified.)
+
+Optional named parameter: `ToStringFormat` can configure `ToString` format. Default is null and output as $`{0}`.
 
 ## UnitGenerateOptions
 
@@ -324,13 +351,36 @@ public static T operator +(in T x, in T y) => new T(checked((U)(x.value + y.valu
 public static T operator -(in T x, in T y) => new T(checked((U)(x.value - y.value)));
 public static T operator *(in T x, in T y) => new T(checked((U)(x.value * y.value)));
 public static T operator /(in T x, in T y) => new T(checked((U)(x.value / y.value)));
+public static T operator +(T value) => new((U)(+value.value));
+public static T operator -(T value) => new((U)(-value.value));
+public static T operator ++(T x) => new T(checked((U)(x.value + 1)));
+public static T operator --(T x) => new T(checked((U)(x.value - 1)));
 ```
+
+In addition,  all members conforming to [System.Numerics.INumber<T>](https://learn.microsoft.com/ja-jp/dotnet/api/system.numerics.inumber-1) are generated.
+
+If you want to suppress this and generate only certain operators, you can use the the `ArithmeticOperatros` option of `[UnitOf]` attribute as follows:
+
+```csharp
+[UnitOf(
+    typeof(int), 
+    UnitGenerateOptions.ArithmeticOperator,
+    ArithmeticOperators = UnitArithmeticOperators.Addition | UnitArithmeticOperators.Subtraction)]
+public readonly partial struct Hp { }
+```
+
+| Value                               | Generates                                                                              | 
+|-------------------------------------|----------------------------------------------------------------------------------------|
+| UnitArithmeticOperators.Addition    | `T operator +(T, T)`                                            |
+| UnitArithmeticOperators.Subtraction | `T operator -(T, T)`                                             |
+| UnitArithmeticOperators.Multiply    | `T operator *(T, T)`,  `T operator +(T)`, `T operator-(T)` |
+| UnitArithmeticOperators.Division    | `T operator /(T, T)`,  `T operator +(T)`, `T operator-(T)` |
+| UnitArithmeticOperators.Increment   | `T operator ++(T)`                                                                     |
+| UnitArithmeticOperators.Decrement   | `T operator --(T)`                                                                     |
 
 ### ValueArithmeticOperator
 
 ```csharp
-public static T operator ++(in T x) => new T(checked((U)(x.value + 1)));
-public static T operator --(in T x) => new T(checked((U)(x.value - 1)));
 public static T operator +(in T x, in U y) => new T(checked((U)(x.value + y)));
 public static T operator -(in T x, in U y) => new T(checked((U)(x.value - y)));
 public static T operator *(in T x, in U y) => new T(checked((U)(x.value * y)));

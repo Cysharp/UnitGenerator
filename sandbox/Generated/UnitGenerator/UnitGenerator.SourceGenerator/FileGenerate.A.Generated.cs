@@ -45,7 +45,7 @@ namespace FileGenerate
                 return value.Equals((int)obj);
             }
 
-           return value.Equals(obj);
+            return value.Equals(obj);
         }
 
         public override int GetHashCode()

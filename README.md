@@ -115,18 +115,19 @@ enum UnitGenerateOptions
 {
     None = 0,
     ImplicitOperator = 1,
-    ParseMethod = 2,
-    MinMaxMethod = 4,
-    ArithmeticOperator = 8,
-    ValueArithmeticOperator = 16,
-    Comparable = 32,
-    Validate = 64,
-    JsonConverter = 128,
-    MessagePackFormatter = 256,
-    DapperTypeHandler = 512,
-    EntityFrameworkValueConverter = 1024,
-    WithoutComparisonOperator = 2048,
-    JsonConverterDictionaryKeySupport = 4096
+    ParseMethod = 1 << 1,
+    MinMaxMethod = 1 << 2,
+    ArithmeticOperator = 1 << 3,
+    ValueArithmeticOperator = 1 << 4,
+    Comparable = 1 << 5,
+    Validate = 1 << 6,
+    JsonConverter = 1 << 7,
+    MessagePackFormatter = 1 << 8,
+    DapperTypeHandler = 1 << 9,
+    EntityFrameworkValueConverter = 1 << 10,
+    WithoutComparisonOperator = 1 << 11,
+    JsonConverterDictionaryKeySupport = 1 << 12,
+    Normalize = 1 << 13,
 }
 ```
 
@@ -172,6 +173,7 @@ public readonly partial struct UserId
   - [Comparable](#comparable)
   - [WithoutComparisonOperator](#withoutcomparisonoperator)
   - [Validate](#validate)
+  - [Normalize](#normalize)
   - [JsonConverter](#jsonconverter)
   - [JsonConverterDictionaryKeySupport](#jsonconverterdictionarykeysupport)
   - [MessagePackFormatter](#messagepackformatter)
@@ -380,6 +382,32 @@ public T(int value)
 }
  
 private partial void Validate();
+```
+
+### Normalize
+
+Implements `partial void Normalize(ref T value)` method that is called on constructor.
+
+```csharp
+// You can implement this custom normalize method to change value during initialization
+[UnitOf(typeof(int), UnitGenerateOptions.Normalize)]
+public readonly partial struct SampleValidate
+{
+    // impl here.
+    private partial void Normalize(ref int value)
+    {
+        value = Math.Max(value, 9999);
+    }
+}
+
+// Source generator generate this codes.
+public T(int value)
+{
+    this.value = value;
+    this.Normalize(ref this.value);
+}
+ 
+private partial void Normalize(ref int value);
 ```
 
 ### JsonConverter

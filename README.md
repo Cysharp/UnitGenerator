@@ -173,6 +173,7 @@ public readonly partial struct UserId
   - [Comparable](#comparable)
   - [WithoutComparisonOperator](#withoutcomparisonoperator)
   - [Validate](#validate)
+  - [Normalize](#normalize)
   - [JsonConverter](#jsonconverter)
   - [JsonConverterDictionaryKeySupport](#jsonconverterdictionarykeysupport)
   - [MessagePackFormatter](#messagepackformatter)

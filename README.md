@@ -61,13 +61,24 @@ public readonly partial struct Hp { }
 
 [System.ComponentModel.TypeConverter(typeof(HpTypeConverter))]
 public readonly partial struct Hp
+    : IEquatable<Hp>
 #if NET7_0_OR_GREATER
-    : INumber<A>
-#else
-    : IEquatable<A>
-    , IComparable<A>
-    , IComparable
+    , IEqualityOperators<Hp, Hp, bool>
+#endif    
+    , IComparable<Hp>
+#if NET7_0_OR_GREATER
+    , IComparisonOperators<Hp, Hp, bool>
 #endif
+#if NET7_0_OR_GREATER
+    , IAdditionOperators<Hp, Hp, Hp>
+    , ISubtractionOperators<Hp, Hp, Hp>
+    , IMultiplyOperators<Hp, Hp, Hp>
+    , IDivisionOperators<Hp, Hp, Hp>
+    , IUnaryPlusOperators<Hp, Hp>
+    , IUnaryNegationOperators<Hp, Hp>
+    , IIncrementOperators<Hp>
+    , IDecrementOperators<Hp>
+#endif    
 {
     readonly int value;
 
@@ -96,17 +107,6 @@ public readonly partial struct Hp
     public static Hp operator --(Hp x) => new Hp(checked((int)(x.value - 1)));
     public static Hp operator +(A value) => new((int)(+value.value));
     public static Hp operator -(A value) => new((int)(-value.value));
-    
-    // The .ArithmeticOperator option also generates all members of `System.Numerics.INumber<T>` by default.
-#if NET7_0_OR_GREATER
-    public static Hp AdditiveIdentity => new(global::UnitGenerator.AsNumber<int>.AdditiveIdentity);
-    public static Hp MultiplicativeIdentity => new(global::UnitGenerator.AsNumber<int>.MultiplicativeIdentity);
-    public static HP One => new(global::UnitGenerator.AsNumber<int>.One);
-    public static int Radix => global::UnitGenerator.AsNumber<int>.Radix;
-    public static Hp Zero => new(global::UnitGenerator.AsNumber<int>.Zero);
-    public static Hp Abs(Hp value) => new(global::UnitGenerator.AsNumber<int>.Abs(value.value));
-    // etc......
-#endif
 
     // UnitGenerateOptions.ValueArithmeticOperator
     public static Hp operator +(Hp x, in int y) => new Hp(checked((int)(x.value + y)));
@@ -371,13 +371,12 @@ public readonly partial struct Hp { }
 
 | Value                               | Generates                                                                              | 
 |-------------------------------------|----------------------------------------------------------------------------------------|
-| UnitArithmeticOperators.Addition    | `T operator +(T, T)`,  `T AdditiveIdentity`                                            |
-| UnitArithmeticOperators.Subtraction | `T operator -(T, T)`, `T AdditiveIdentity`                                             |
-| UnitArithmeticOperators.Multiply    | `T operator *(T, T)`,  `T operator +(T)`, `T operator-(T)`, `T MultiplicativeIdentity` |
-| UnitArithmeticOperators.Division    | `T operator /(T, T)`,  `T operator +(T)`, `T operator-(T)`, `T MultiplicativeIdentity` |
+| UnitArithmeticOperators.Addition    | `T operator +(T, T)`                                            |
+| UnitArithmeticOperators.Subtraction | `T operator -(T, T)`                                             |
+| UnitArithmeticOperators.Multiply    | `T operator *(T, T)`,  `T operator +(T)`, `T operator-(T)` |
+| UnitArithmeticOperators.Division    | `T operator /(T, T)`,  `T operator +(T)`, `T operator-(T)` |
 | UnitArithmeticOperators.Increment   | `T operator ++(T)`                                                                     |
 | UnitArithmeticOperators.Decrement   | `T operator --(T)`                                                                     |
-
 
 ### ValueArithmeticOperator
 

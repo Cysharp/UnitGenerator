@@ -97,7 +97,7 @@ public readonly partial struct Hp
     public static Hp operator +(A value) => new((int)(+value.value));
     public static Hp operator -(A value) => new((int)(-value.value));
     
-    // In addition, .ArithmeticOperator option also generates all members of `System.Numerics.INumber<T>` by default.
+    // The .ArithmeticOperator option also generates all members of `System.Numerics.INumber<T>` by default.
 #if NET7_0_OR_GREATER
     public static Hp AdditiveIdentity => new(global::UnitGenerator.AsNumber<int>.AdditiveIdentity);
     public static Hp MultiplicativeIdentity => new(global::UnitGenerator.AsNumber<int>.MultiplicativeIdentity);
@@ -218,7 +218,7 @@ namespace UnitGenerator
         public UnitArithmeticOperators ArithmeticOperators { get; set; }
         public string ToStringFormat { get; set; }
         
-        public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None)
+        public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None) { ... }
     }
 }
 ```
@@ -266,7 +266,7 @@ public static GroupId NewGroupId();
 
 Second parameter `UnitGenerateOptions options` can configure which method to implement, default is `None`.
 
-Optional named parameter: `ArithmeticOperators` can configure which generates operators specifically. (This can be used if UnitGenerateOptions.ArithmeticOperator is specified.)
+Optional named parameter: `ArithmeticOperators` can configure which generates operators specifically. Default is `Number`. (This can be used if UnitGenerateOptions.ArithmeticOperator is specified.)
 
 Optional named parameter: `ToStringFormat` can configure `ToString` format. Default is null and output as $`{0}`.
 
@@ -296,13 +296,7 @@ internal enum UnitGenerateOptions
 You can use this with `[UnitOf]`.
 
 ```csharp
-[UnitOf(
-    typeof(int), 
-    UnitGenerateOptions.ArithmeticOperator | 
-    UnitGenerateOptions.ValueArithmeticOperator | 
-    UnitGenerateOptions.Comparable | 
-    UnitGenerateOptions.MinMaxMethod,
-    ArithemticOperators = UnitGenerate)]
+[UnitOf(typeof(int), UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.MinMaxMethod)]
 public readonly partial struct Strength { }
 
 [UnitOf(typeof(DateTime), UnitGenerateOptions.Validate | UnitGenerateOptions.ParseMethod | UnitGenerateOptions.Comparable)]
@@ -357,13 +351,37 @@ public static T operator +(in T x, in T y) => new T(checked((U)(x.value + y.valu
 public static T operator -(in T x, in T y) => new T(checked((U)(x.value - y.value)));
 public static T operator *(in T x, in T y) => new T(checked((U)(x.value * y.value)));
 public static T operator /(in T x, in T y) => new T(checked((U)(x.value / y.value)));
+public static T operator +(T value) => new((U)(+value.value));
+public static T operator -(T value) => new((U)(-value.value));
+public static T operator ++(T x) => new T(checked((U)(x.value + 1)));
+public static T operator --(T x) => new T(checked((U)(x.value - 1)));
 ```
+
+In addition,  all members conforming to [System.Numerics.INumber<T>](https://learn.microsoft.com/ja-jp/dotnet/api/system.numerics.inumber-1) are generated.
+
+If you want to suppress this and generate only certain operators, you can use the the `ArithmeticOperatros` option of `[UnitOf]` attribute as follows:
+
+```csharp
+[UnitOf(
+    typeof(int), 
+    UnitGenerateOptions.ArithmeticOperator,
+    ArithmeticOperators = UnitArithmeticOperators.Addition | UnitArithmeticOperators.Subtraction)]
+public readonly partial struct Hp { }
+```
+
+| Value                               | Generates                                                                              | 
+|-------------------------------------|----------------------------------------------------------------------------------------|
+| UnitArithmeticOperators.Addition    | `T operator +(T, T)`,  `T AdditiveIdentity`                                            |
+| UnitArithmeticOperators.Subtraction | `T operator -(T, T)`, `T AdditiveIdentity`                                             |
+| UnitArithmeticOperators.Multiply    | `T operator *(T, T)`,  `T operator +(T)`, `T operator-(T)`, `T MultiplicativeIdentity` |
+| UnitArithmeticOperators.Division    | `T operator /(T, T)`,  `T operator +(T)`, `T operator-(T)`, `T MultiplicativeIdentity` |
+| UnitArithmeticOperators.Increment   | `T operator ++(T)`                                                                     |
+| UnitArithmeticOperators.Decrement   | `T operator --(T)`                                                                     |
+
 
 ### ValueArithmeticOperator
 
 ```csharp
-public static T operator ++(in T x) => new T(checked((U)(x.value + 1)));
-public static T operator --(in T x) => new T(checked((U)(x.value - 1)));
 public static T operator +(in T x, in U y) => new T(checked((U)(x.value + y)));
 public static T operator -(in T x, in U y) => new T(checked((U)(x.value - y)));
 public static T operator *(in T x, in U y) => new T(checked((U)(x.value * y)));

@@ -915,32 +915,39 @@ namespace {{ns}}
 
         public static bool TryConvertFromChecked<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther> 
         {
-            throw new NotSupportedException();
+            result = default;
+            return false;
         }
 
         public static bool TryConvertFromSaturating<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther> 
         {
-            throw new NotSupportedException();
+            result = default;
+            return false;
         }
 
         public static bool TryConvertFromTruncating<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther>
         {
-            throw new NotSupportedException();
+            result = default;
+            return false;
+
         }
 
         public static bool TryConvertToChecked<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther>
         {
-            throw new NotSupportedException();
+            result = default;
+            return false;
         }
 
         public static bool TryConvertToSaturating<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther> 
         {
-            throw new NotSupportedException();
+            result = default;
+            return false;
         }
 
         public static bool TryConvertToTruncating<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther>
         {
-            throw new NotSupportedException();
+            result = default;
+            return false;
         }
 
         public static {{unitTypeName}} Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => new {{unitTypeName}}({{innerTypeName}}.Parse(s, style, provider));

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnitGenerator;
+﻿using UnitGenerator;
 
 namespace FileGenerate
 {
@@ -14,6 +9,11 @@ namespace FileGenerate
 
     [UnitOf(typeof(string))]
     public readonly partial struct B
+    {
+    }
+    
+    [UnitOf(typeof(int), UnitGenerateOptions.Comparable | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator)]
+    public readonly partial struct C
     {
     }
 }

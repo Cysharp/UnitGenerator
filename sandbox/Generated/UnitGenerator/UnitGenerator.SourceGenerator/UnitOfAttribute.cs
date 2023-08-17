@@ -3,8 +3,10 @@
 // </auto-generated>
 #pragma warning disable CS8669
 #pragma warning disable CS8625
-#nullable enable
 using System;
+#if NET7_0_OR_GREATER
+using System.Numerics;
+#endif
 
 namespace UnitGenerator
 {
@@ -13,7 +15,7 @@ namespace UnitGenerator
     {
         public Type Type { get; }
         public UnitGenerateOptions Options { get; }
-        public UnitArithmeticOperators ArithmeticOperators { get; set; }
+        public UnitArithmeticOperators ArithmeticOperators { get; set; } = UnitArithmeticOperators.All;
         public string ToStringFormat { get; set; }
 
         public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None)
@@ -46,7 +48,7 @@ namespace UnitGenerator
     [Flags]
     internal enum UnitArithmeticOperators
     {
-        Number = 0,
+        All = Addition | Subtraction | Multiply | Division | Increment | Decrement,
         Addition = 1,
         Subtraction = 1 << 1,
         Multiply = 1 << 2,
@@ -54,35 +56,4 @@ namespace UnitGenerator
         Increment = 1 << 4,
         Decrement = 1 << 5,
     }
-    
-#if NET7_0_OR_GREATER
-   internal static class AsNumber<T> where T : INumber<T>
-   {
-        public static T One => T.One;
-        public static int Radix => T.Radix;
-        public static T Zero => T.Zero;
-        public static T Abs(T value) => T.Abs(value);
-        public static bool IsCanonical(T value) => T.IsCanonical(value);
-        public static bool IsComplexNumber(T value) => T.IsComplexNumber(value);
-        public static bool IsEvenInteger(T value) => T.IsEvenInteger(value);
-        public static bool IsFinite(T value) => T.IsFinite(value);
-        public static bool IsImaginaryNumber(T value) => T.IsImaginaryNumber(value);
-        public static bool IsInfinity(T value) => T.IsInfinity(value);
-        public static bool IsInteger(T value) => T.IsInteger(value);
-        public static bool IsNaN(T value) => T.IsNaN(value);
-        public static bool IsNegative(T value) => T.IsNegative(value);
-        public static bool IsNegativeInfinity(T value) => T.IsNegativeInfinity(value);
-        public static bool IsNormal(T value) => T.IsNormal(value);
-        public static bool IsOddInteger(T value) => T.IsOddInteger(value);
-        public static bool IsPositive(T value) => T.IsPositive(value);
-        public static bool IsPositiveInfinity(T value) => T.IsPositiveInfinity(value);
-        public static bool IsRealNumber(T value) => T.IsRealNumber(value);
-        public static bool IsSubnormal(T value) => T.IsSubnormal(value);
-        public static bool IsZero(T value) => T.IsZero(value);
-        public static T MaxMagnitude(T x, T y) => T.MaxMagnitude(x, y);
-        public static T MaxMagnitudeNumber(T x, T y) => T.MaxMagnitudeNumber(x, y);
-        public static T MinMagnitude(T x, T y) => T.MinMagnitude(x, y);
-        public static T MinMagnitudeNumber(T x, T y) => T.MinMagnitudeNumber(x, y);
-   }
-#endif    
 }

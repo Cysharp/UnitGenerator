@@ -26,7 +26,7 @@ namespace UnitGenerator
     [Flags]
     internal enum UnitArithmeticOperators
     {
-        Number = 0,
+        All = Addition | Subtraction | Multiply | Division | Increment | Decrement,
         Addition = 1,
         Subtraction = 1 << 1,
         Multiply = 1 << 2,

@@ -33,7 +33,7 @@ namespace UnitGenerator
                     var model = context.Compilation.GetSemanticModel(type.SyntaxTree);
 
                     // retrieve attribute parameter
-                    var prop = new UnitOfAttributeProperty();
+                    var prop = new UnitOfAttributeProperty { ArithmeticOperators = UnitArithmeticOperators.All };
 
                     if (attr.ArgumentList is null) goto ADD;
 
@@ -133,7 +133,7 @@ namespace UnitGenerator
     {
         public Type Type { get; }
         public UnitGenerateOptions Options { get; }
-        public UnitArithmeticOperators ArithmeticOperators { get; set; }
+        public UnitArithmeticOperators ArithmeticOperators { get; set; } = UnitArithmeticOperators.All;
         public string ToStringFormat { get; set; }
 
         public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None)
@@ -166,7 +166,7 @@ namespace UnitGenerator
     [Flags]
     internal enum UnitArithmeticOperators
     {
-        Number = 0,
+        All = Addition | Subtraction | Multiply | Division | Increment | Decrement,
         Addition = 1,
         Subtraction = 1 << 1,
         Multiply = 1 << 2,
@@ -174,39 +174,6 @@ namespace UnitGenerator
         Increment = 1 << 4,
         Decrement = 1 << 5,
     }
-    
-#if NET7_0_OR_GREATER
-   internal static class AsNumber<T> where T : INumber<T>
-   {
-        public static T One => T.One;
-        public static int Radix => T.Radix;
-        public static T Zero => T.Zero;
-        public static T Abs(T value) => T.Abs(value);
-        public static T AdditiveIdentity => T.AdditiveIdentity;
-        public static T MultiplicativeIdentity => T.MultiplicativeIdentity;
-        public static bool IsCanonical(T value) => T.IsCanonical(value);
-        public static bool IsComplexNumber(T value) => T.IsComplexNumber(value);
-        public static bool IsEvenInteger(T value) => T.IsEvenInteger(value);
-        public static bool IsFinite(T value) => T.IsFinite(value);
-        public static bool IsImaginaryNumber(T value) => T.IsImaginaryNumber(value);
-        public static bool IsInfinity(T value) => T.IsInfinity(value);
-        public static bool IsInteger(T value) => T.IsInteger(value);
-        public static bool IsNaN(T value) => T.IsNaN(value);
-        public static bool IsNegative(T value) => T.IsNegative(value);
-        public static bool IsNegativeInfinity(T value) => T.IsNegativeInfinity(value);
-        public static bool IsNormal(T value) => T.IsNormal(value);
-        public static bool IsOddInteger(T value) => T.IsOddInteger(value);
-        public static bool IsPositive(T value) => T.IsPositive(value);
-        public static bool IsPositiveInfinity(T value) => T.IsPositiveInfinity(value);
-        public static bool IsRealNumber(T value) => T.IsRealNumber(value);
-        public static bool IsSubnormal(T value) => T.IsSubnormal(value);
-        public static bool IsZero(T value) => T.IsZero(value);
-        public static T MaxMagnitude(T x, T y) => T.MaxMagnitude(x, y);
-        public static T MaxMagnitudeNumber(T x, T y) => T.MaxMagnitudeNumber(x, y);
-        public static T MinMagnitude(T x, T y) => T.MinMagnitude(x, y);
-        public static T MinMagnitudeNumber(T x, T y) => T.MinMagnitudeNumber(x, y);
-   }
-#endif    
 }
 
 """;
@@ -273,99 +240,70 @@ namespace {{ns}}
 
             sb.AppendLine($$"""
     [System.ComponentModel.TypeConverter(typeof({{unitTypeName}}TypeConverter))]
-    readonly partial struct {{unitTypeName}}
-""");
-            if (prop.IsNumber())
-            {
-                sb.AppendLine($$"""
-#if NET7_0_OR_GREATER
-        : INumber<{{unitTypeName}}>
-#else
-        : IEquatable<{{unitTypeName}}>
-        , IComparable<{{unitTypeName}}>
-        , IComparable
-#endif
-""");
-            }
-            else
-            {
-                sb.AppendLine($$"""
+    readonly partial struct {{unitTypeName}} 
         : IEquatable<{{unitTypeName}}>
 #if NET7_0_OR_GREATER
         , IEqualityOperators<{{unitTypeName}}, {{unitTypeName}}, bool>
-#endif
+#endif    
 """);
-                if (prop.HasFlag(UnitGenerateOptions.Comparable))
-                {
-                    sb.AppendLine($$"""
+            if (prop.HasFlag(UnitGenerateOptions.Comparable) && 
+                !prop.HasFlag(UnitGenerateOptions.WithoutComparisonOperator))
+            {
+                sb.AppendLine($$"""
         , IComparable<{{unitTypeName}}>
-""");
-                    if (!prop.HasFlag(UnitGenerateOptions.WithoutComparisonOperator))
-                    {
-                        sb.AppendLine($$"""
 #if NET7_0_OR_GREATER
         , IComparisonOperators<{{unitTypeName}}, {{unitTypeName}}, bool>
 #endif
 """);
-                    }
-                }
-                if (prop.HasFlag(UnitGenerateOptions.ArithmeticOperator))
+            }
+            if (prop.HasFlag(UnitGenerateOptions.ArithmeticOperator))
+            {
+                sb.AppendLine("#if NET7_0_OR_GREATER");
+                if (prop.HasArithmeticOperator(UnitArithmeticOperators.Addition))
                 {
-                    sb.AppendLine("#if NET7_0_OR_GREATER");
-                    if (prop.HasArithmeticOperator(UnitArithmeticOperators.Addition))
-                    {
-                        sb.AppendLine($$"""
+                    sb.AppendLine($$"""
         , IAdditionOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
 """);
-                    }
-                    if (prop.HasArithmeticOperator(UnitArithmeticOperators.Subtraction))
-                    {
-                        sb.AppendLine($$"""
+                }
+                if (prop.HasArithmeticOperator(UnitArithmeticOperators.Subtraction))
+                {
+                    sb.AppendLine($$"""
         , ISubtractionOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
 """);
-                    }
-                    if (prop.HasArithmeticOperator(UnitArithmeticOperators.Addition) ||
-                        prop.HasArithmeticOperator(UnitArithmeticOperators.Subtraction))
-                    {
-                        sb.AppendLine($$"""
-        , IAdditiveIdentity<{{unitTypeName}}, {{unitTypeName}}>
-""");
-                    }
-                    if (prop.HasArithmeticOperator(UnitArithmeticOperators.Multiply))
-                    {
-                        sb.AppendLine($$"""
+                }
+                if (prop.HasArithmeticOperator(UnitArithmeticOperators.Multiply))
+                {
+                    sb.AppendLine($$"""
         , IMultiplyOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
 """);
-                    }
-                    if (prop.HasArithmeticOperator(UnitArithmeticOperators.Division))
-                    {
-                        sb.AppendLine($$"""
+                }
+                if (prop.HasArithmeticOperator(UnitArithmeticOperators.Division))
+                {
+                    sb.AppendLine($$"""
         , IDivisionOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
 """);
-                    }
-                    if (prop.HasArithmeticOperator(UnitArithmeticOperators.Multiply) ||
-                        prop.HasArithmeticOperator(UnitArithmeticOperators.Division))
-                    {
-                        sb.AppendLine($$"""
-        , IMultiplicativeIdentity<{{unitTypeName}}, {{unitTypeName}}>
+                }
+                if (prop.HasArithmeticOperator(UnitArithmeticOperators.Multiply) ||
+                    prop.HasArithmeticOperator(UnitArithmeticOperators.Division))
+                {
+                    sb.AppendLine($$"""
         , IUnaryPlusOperators<{{unitTypeName}}, {{unitTypeName}}>
         , IUnaryNegationOperators<{{unitTypeName}}, {{unitTypeName}}>
 """);
-                    }
-                    if (prop.HasArithmeticOperator(UnitArithmeticOperators.Increment))
-                    {
-                        sb.AppendLine($$"""
+                }
+                if (prop.HasArithmeticOperator(UnitArithmeticOperators.Increment))
+                {
+                    sb.AppendLine($$"""
         , IIncrementOperators<{{unitTypeName}}>
 """);
-                    }
-                    if (prop.HasArithmeticOperator(UnitArithmeticOperators.Decrement))
-                    {
-                        sb.AppendLine($$"""
+                }
+                if (prop.HasArithmeticOperator(UnitArithmeticOperators.Decrement))
+                {
+                    sb.AppendLine($$"""
         , IDecrementOperators<{{unitTypeName}}>
 """);
-                    }
-                    sb.AppendLine("#endif");
                 }
+                sb.AppendLine("#endif");
             }
 
             sb.AppendLine($$"""
@@ -619,18 +557,9 @@ namespace {{ns}}
         // UnitGenerateOptions.ArithmeticOperator
         
 """);
-                if (prop.HasArithmeticOperator(UnitArithmeticOperators.Addition) ||
-                    prop.HasArithmeticOperator(UnitArithmeticOperators.Subtraction))
+                if (prop.HasArithmeticOperator(UnitArithmeticOperators.Addition))
                 {
-                    sb.AppendLine($$"""
-#if NET7_0_OR_GREATER
-        public static {{unitTypeName}} AdditiveIdentity => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.AdditiveIdentity);
-#endif
-
-""");
-                    if (prop.HasArithmeticOperator(UnitArithmeticOperators.Addition))
-                    {
-                       sb.AppendLine($$"""
+                   sb.AppendLine($$"""
         public static {{unitTypeName}} operator +({{unitTypeName}} x, {{unitTypeName}} y)
         {
             checked
@@ -640,10 +569,10 @@ namespace {{ns}}
         }
 
 """);
-                    }
-                    if (prop.HasArithmeticOperator(UnitArithmeticOperators.Subtraction))
-                    {
-                        sb.AppendLine($$"""
+                }
+                if (prop.HasArithmeticOperator(UnitArithmeticOperators.Subtraction))
+                {
+                    sb.AppendLine($$"""
         public static {{unitTypeName}} operator -({{unitTypeName}} x, {{unitTypeName}} y)
         {
             checked
@@ -653,16 +582,12 @@ namespace {{ns}}
         }
 
 """);
-                    }
-                } // End Addition, Subtraction
+                }
 
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Multiply) ||
                     prop.HasArithmeticOperator(UnitArithmeticOperators.Division))
                 {
                     sb.AppendLine($$"""
-#if NET7_0_OR_GREATER
-        public static {{unitTypeName}} MultiplicativeIdentity => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.MultiplicativeIdentity);
-#endif
         public static {{unitTypeName}} operator +({{unitTypeName}} value) => new(({{innerTypeName}})(+value.value));
         public static {{unitTypeName}} operator -({{unitTypeName}} value) => new(({{innerTypeName}})(-value.value));
 
@@ -785,7 +710,7 @@ namespace {{ns}}
                 }
             } // End ValueArithmeticOperator
 
-            if (prop.IsNumber() || prop.HasFlag(UnitGenerateOptions.Comparable))
+            if (prop.HasFlag(UnitGenerateOptions.Comparable))
             {
                 sb.AppendLine($$"""
         // UnitGenerateOptions.Comparable
@@ -794,24 +719,9 @@ namespace {{ns}}
         {
             return value.CompareTo(other.value);
         }
-        
-        public int CompareTo(object? obj)
-        {
-            if (obj == null)
-            {
-                return 1;
-            }
-
-            if (obj is {{unitTypeName}} other)
-            {
-                return value.CompareTo(other.value); 
-            }
-            throw new ArgumentException();        
-        }
 """);
             }
-            if (prop.IsNumber() ||
-                (prop.HasFlag(UnitGenerateOptions.Comparable) && !prop.HasFlag(UnitGenerateOptions.WithoutComparisonOperator)))
+            if (prop.HasFlag(UnitGenerateOptions.Comparable) && !prop.HasFlag(UnitGenerateOptions.WithoutComparisonOperator))
             {
                 sb.AppendLine($$"""
         public static bool operator >({{unitTypeName}} x, {{unitTypeName}} y)
@@ -836,148 +746,6 @@ namespace {{ns}}
 
 """);
             }
-
-            if (prop.IsNumber())
-            {
-                sb.AppendLine($$"""
-        public static {{unitTypeName}} operator %({{unitTypeName}} x, {{unitTypeName}} y) => new {{unitTypeName}}(({{innerTypeName}})(x.value % y.value)); 
-        
-        // IFormattable<T>
-        
-        public string ToString(string? format, IFormatProvider? formatProvider) => value.ToString(format, formatProvider);
-
-#if NET6_0_OR_GREATER
-        // ISpanFormattable<T>    
-                    
-        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) 
-        {
-            return value.TryFormat(destination, out charsWritten, format, provider);
-        }
-#endif        
-#if NET7_0_OR_GREATER
-        // IParsable<T>
-        
-        public static {{unitTypeName}} Parse(string s, IFormatProvider? provider) => new {{unitTypeName}}({{innerTypeName}}.Parse(s, provider));
-
-        public static bool TryParse(string? s, IFormatProvider? provider, out {{unitTypeName}} result) 
-        {
-            if ({{innerTypeName}}.TryParse(s, provider, out var parsedValue))
-            {
-                result = new {{unitTypeName}}(parsedValue);
-                return true;
-            }
-            result = default;
-            return false;
-        }
-   
-        // ISpanParsable<T>          
-                                                                                   
-        public static {{unitTypeName}} Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => new {{unitTypeName}}({{innerTypeName}}.Parse(s, provider));
-        
-        public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out {{unitTypeName}} result) 
-        {
-            if ({{innerTypeName}}.TryParse(s, provider, out var parsedValue))
-            {
-                result = new {{unitTypeName}}(parsedValue);
-                return true;
-            }
-            result = default;
-            return false;
-        }
-
-        // INumberBase<T>
-        
-        public static {{unitTypeName}} One => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.One);
-        public static int Radix => global::UnitGenerator.AsNumber<{{innerTypeName}}>.Radix;
-        public static {{unitTypeName}} Zero => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.Zero);
-        public static {{unitTypeName}} Abs({{unitTypeName}} value) => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.Abs(value.value));
-        public static bool IsCanonical({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsCanonical(value.value);
-        public static bool IsComplexNumber({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsComplexNumber(value.value);
-        public static bool IsEvenInteger({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsEvenInteger(value.value);
-        public static bool IsFinite({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsFinite(value.value);
-        public static bool IsImaginaryNumber({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsImaginaryNumber(value.value);
-        public static bool IsInfinity({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsInfinity(value.value);
-        public static bool IsInteger({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsInteger(value.value);
-        public static bool IsNaN({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsNaN(value.value);
-        public static bool IsNegative({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsNegative(value.value);
-        public static bool IsNegativeInfinity({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsNegativeInfinity(value.value);
-        public static bool IsNormal({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsNormal(value.value);
-        public static bool IsOddInteger({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsOddInteger(value.value);
-        public static bool IsPositive({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsPositive(value.value);
-        public static bool IsPositiveInfinity({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsPositiveInfinity(value.value);
-        public static bool IsRealNumber({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsRealNumber(value.value);
-        public static bool IsSubnormal({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsSubnormal(value.value);
-        public static bool IsZero({{unitTypeName}} value) => global::UnitGenerator.AsNumber<{{innerTypeName}}>.IsZero(value.value);
-        public static {{unitTypeName}} MaxMagnitude({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.MaxMagnitude(x.value, y.value));
-        public static {{unitTypeName}} MaxMagnitudeNumber({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.MaxMagnitudeNumber(x.value, y.value));
-        public static {{unitTypeName}} MinMagnitude({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.MinMagnitude(x.value, y.value));
-        public static {{unitTypeName}} MinMagnitudeNumber({{unitTypeName}} x, {{unitTypeName}} y) => new(global::UnitGenerator.AsNumber<{{innerTypeName}}>.MinMagnitudeNumber(x.value, y.value));
-
-        public static bool TryConvertFromChecked<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther> 
-        {
-            result = default;
-            return false;
-        }
-
-        public static bool TryConvertFromSaturating<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther> 
-        {
-            result = default;
-            return false;
-        }
-
-        public static bool TryConvertFromTruncating<TOther>(TOther value, out {{unitTypeName}} result) where TOther : INumberBase<TOther>
-        {
-            result = default;
-            return false;
-
-        }
-
-        public static bool TryConvertToChecked<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther>
-        {
-            result = default;
-            return false;
-        }
-
-        public static bool TryConvertToSaturating<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther> 
-        {
-            result = default;
-            return false;
-        }
-
-        public static bool TryConvertToTruncating<TOther>({{unitTypeName}} value, out TOther result) where TOther : INumberBase<TOther>
-        {
-            result = default;
-            return false;
-        }
-
-        public static {{unitTypeName}} Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => new {{unitTypeName}}({{innerTypeName}}.Parse(s, style, provider));
-        public static {{unitTypeName}} Parse(string s, NumberStyles style, IFormatProvider? provider) => new {{unitTypeName}}({{innerTypeName}}.Parse(s, style, provider)); 
-
-        public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out {{unitTypeName}} result) 
-        {
-            if ({{innerTypeName}}.TryParse(s, style, provider, out var value))
-            {
-                result = new {{unitTypeName}}(value);
-                return true;
-            }
-            result = default;
-            return false;
-        }
-
-        public static bool TryParse(string? s, NumberStyles style, IFormatProvider? provider, out {{unitTypeName}} result)
-        {
-            if ({{innerTypeName}}.TryParse(s, style, provider, out var value))
-            {
-                result = new {{unitTypeName}}(value);
-                return true;
-            }
-            result = default;
-            return false;
-        }        
-#endif
-
-""");
-            } // End Number
 
             if (prop.HasFlag(UnitGenerateOptions.JsonConverter))
             {
@@ -1260,21 +1028,14 @@ namespace {{ns}}
 
             public bool HasFlag(UnitGenerateOptions options) => Options.HasFlag(options);
 
-            public bool IsNumber() => HasFlag(UnitGenerateOptions.ArithmeticOperator) &&
-                                      ArithmeticOperators == UnitArithmeticOperators.Number;
-
             public bool HasArithmeticOperator(UnitArithmeticOperators op)
             {
-                return HasFlag(UnitGenerateOptions.ArithmeticOperator) &&
-                       (ArithmeticOperators == UnitArithmeticOperators.Number ||
-                        ArithmeticOperators.HasFlag(op));
+                return HasFlag(UnitGenerateOptions.ArithmeticOperator) && ArithmeticOperators.HasFlag(op);
             }
 
             public bool HasValueArithmeticOperator(UnitArithmeticOperators op)
             {
-                return HasFlag(UnitGenerateOptions.ValueArithmeticOperator) &&
-                       (ArithmeticOperators == UnitArithmeticOperators.Number ||
-                        ArithmeticOperators.HasFlag(op));
+                return HasFlag(UnitGenerateOptions.ValueArithmeticOperator) && ArithmeticOperators.HasFlag(op);
             }
 
             public DbType GetDbType()

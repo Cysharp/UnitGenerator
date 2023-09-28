@@ -87,24 +87,17 @@ namespace UnitGenerator
                     var typeSymbol = context.Compilation.GetSemanticModel(type.SyntaxTree).GetDeclaredSymbol(type);
                     if (typeSymbol == null) throw new Exception("can not get typeSymbol.");
 
-                    var template = new CodeTemplate
-                    {
-                        Name = typeSymbol.Name,
-                        Namespace = typeSymbol.ContainingNamespace.IsGlobalNamespace ? null : typeSymbol.ContainingNamespace.ToDisplayString(),
-                        Type = prop.Type.ToString(),
-                        Options = prop.Options,
-                        ToStringFormat = prop.ToStringFormat
-                    };
+                    var source = GenerateType(typeSymbol, prop);
+                    
+                    var ns = typeSymbol.ContainingNamespace.IsGlobalNamespace
+                        ? null
+                        : typeSymbol.ContainingNamespace.ToDisplayString();
 
-                    var text = GenerateType(typeSymbol, prop);
-                    if (template.Namespace == null)
-                    {
-                        context.AddSource($"{template.Name}.Generated.cs", text);
-                    }
-                    else
-                    {
-                        context.AddSource($"{template.Namespace}.{template.Name}.Generated.cs", text);
-                    }
+                    var filename = ns == null
+                        ? $"{typeSymbol.Name}.g.cs"
+                        : $"{ns}.{typeSymbol.Name}.g.cs";
+                    
+                    context.AddSource(filename, source);
                 }
             }
             catch (Exception ex)

@@ -391,25 +391,39 @@ namespace {{ns}}
         }
 
 """);
-            if (prop.ToStringFormat is { } format)
+            if (prop.IsString())
             {
-                sb.AppendLine($$"""
-        public override string ToString()
-        {
-            return string.Format({{format}}, value);
-        }
+                if (prop.ToStringFormat is { } format)
+                {
+                    sb.AppendLine($$"""
+        public override string ToString() => value == null ? "null" : string.Format("{{format}}", value);
 
 """);
+                }
+                else
+                {
+                    sb.AppendLine("""
+        public override string ToString() => value == null ? "null" : value.ToString(); 
+
+""");
+                }
             }
             else
             {
-                sb.AppendLine("""
-        public override string ToString()
-        {
-            return value.ToString();
-        }
+                if (prop.ToStringFormat is { } format)
+                {
+                    sb.AppendLine($$"""
+        public override string ToString() => string.Format("{{format}}", value);
 
 """);
+                }
+                else
+                {
+                    sb.AppendLine("""
+        public override string ToString() => value.ToString();
+
+""");
+                }
             }
 
             if (prop.IsGuid())

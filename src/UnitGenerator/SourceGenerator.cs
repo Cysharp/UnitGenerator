@@ -41,40 +41,43 @@ namespace UnitGenerator
                     {
                         var arg = attr.ArgumentList.Arguments[i];
                         var expr = arg.Expression;
-
-                        if (i == 0) // Type type
+                        
+                        var argName = arg.NameEquals?.Name.ToString();
+                        switch (argName)
                         {
-                            if (expr is TypeOfExpressionSyntax typeOfExpr)
+                            case "ArithmeticOperators":
                             {
-                                var typeSymbol = model.GetSymbolInfo(typeOfExpr.Type).Symbol as ITypeSymbol;
-                                if (typeSymbol == null) throw new Exception("require type-symbol.");
-                                prop.Type = typeSymbol;
+                                var parsed = Enum.ToObject(typeof(UnitArithmeticOperators), model.GetConstantValue(expr).Value);
+                                prop.ArithmeticOperators = (UnitArithmeticOperators)parsed;
+                                break;
                             }
-                            else
+                            case "ToStringFormat":
                             {
-                                throw new Exception("require UnitOf attribute and ctor.");
+                                var format = model.GetConstantValue(expr).Value?.ToString();
+                                prop.ToStringFormat = format;
+                                break;
                             }
-                        }
-                        else if (i == 1) // UnitGenerateOptions options
-                        {
-                            // e.g. UnitGenerateOptions.ImplicitOperator | UnitGenerateOptions.ParseMethod => ImplicitOperatior, ParseMethod
-                            var parsed = Enum.ToObject(typeof(UnitGenerateOptions), model.GetConstantValue(expr).Value);
-                            prop.Options = (UnitGenerateOptions)parsed;
-                        }
-                        else
-                        {
-                            var argName = arg.NameEquals?.Name.ToString();
-                            switch (argName)
-                            {
-                                case "ArithmeticOperators":
-                                    var parsed = Enum.ToObject(typeof(UnitArithmeticOperators), model.GetConstantValue(expr).Value);
-                                    prop.ArithmeticOperators = (UnitArithmeticOperators)parsed;
-                                    break;
-                                case "ToStringFormat":
-                                    var format = model.GetConstantValue(expr).Value?.ToString();
-                                    prop.ToStringFormat = format;
-                                    break;
-                            }
+                            default:
+                                if (i == 0) // Type type
+                                {
+                                    if (expr is TypeOfExpressionSyntax typeOfExpr)
+                                    {
+                                        var typeSymbol = model.GetSymbolInfo(typeOfExpr.Type).Symbol as ITypeSymbol;
+                                        if (typeSymbol == null) throw new Exception("require type-symbol.");
+                                        prop.Type = typeSymbol;
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("require UnitOf attribute and ctor.");
+                                    }
+                                }
+                                else if (i == 1) // UnitGenerateOptions options
+                                {
+                                    // e.g. UnitGenerateOptions.ImplicitOperator | UnitGenerateOptions.ParseMethod => ImplicitOperatior, ParseMethod
+                                    var parsed = Enum.ToObject(typeof(UnitGenerateOptions), model.GetConstantValue(expr).Value);
+                                    prop.Options = (UnitGenerateOptions)parsed;
+                                }
+                                break;
                         }
                     }
 

@@ -26,20 +26,23 @@ namespace UnitGenerator
                 if (receiver == null) return;
 
                 var list = new List<(StructDeclarationSyntax, UnitOfAttributeProperty)>();
-                foreach (var (type, attr) in receiver.Targets)
+                foreach (var (type, attr, targetType) in receiver.Targets)
                 {
-                    if (attr.ArgumentList is null) continue;
-
                     var model = context.Compilation.GetSemanticModel(type.SyntaxTree);
 
                     // retrieve attribute parameter
                     var prop = new UnitOfAttributeProperty { ArithmeticOperators = UnitArithmeticOperators.All };
 
-                    if (attr.ArgumentList is null) goto ADD;
-
-                    for (int i = 0; i < attr.ArgumentList.Arguments.Count; i++)
+                    if(targetType is not null)
                     {
-                        var arg = attr.ArgumentList.Arguments[i];
+                        var typeSymbol = model.GetSymbolInfo(targetType).Symbol as ITypeSymbol;
+                        if (typeSymbol == null) throw new Exception("require type-symbol.");
+                        prop.Type = typeSymbol;
+                    }
+
+                    for (int i = 0; i < (attr.ArgumentList?.Arguments.Count ?? 0); i++)
+                    {
+                        var arg = attr.ArgumentList!.Arguments[i];
                         var expr = arg.Expression;
                         
                         var argName = arg.NameEquals?.Name.ToString();
@@ -66,6 +69,12 @@ namespace UnitGenerator
                                         if (typeSymbol == null) throw new Exception("require type-symbol.");
                                         prop.Type = typeSymbol;
                                     }
+                                    else if (targetType is not null) // UnitGenerateOptions options
+                                    {
+                                        // e.g. UnitGenerateOptions.ImplicitOperator | UnitGenerateOptions.ParseMethod => ImplicitOperatior, ParseMethod
+                                        var parsed = Enum.ToObject(typeof(UnitGenerateOptions), model.GetConstantValue(expr).Value);
+                                        prop.Options = (UnitGenerateOptions)parsed;
+                                    }
                                     else
                                     {
                                         throw new Exception("require UnitOf attribute and ctor.");
@@ -81,7 +90,6 @@ namespace UnitGenerator
                         }
                     }
 
-                ADD:
                     list.Add((type, prop));
                 }
 
@@ -139,6 +147,23 @@ namespace UnitGenerator
         }
     }
     
+#if NET7_0_OR_GREATER
+    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
+    internal class UnitOfAttribute<T> : Attribute
+    {
+        public Type Type { get; }
+        public UnitGenerateOptions Options { get; }
+        public UnitArithmeticOperators ArithmeticOperators { get; set; } = UnitArithmeticOperators.All;
+        public string? ToStringFormat { get; set; }
+
+        public UnitOfAttribute(UnitGenerateOptions options = UnitGenerateOptions.None)
+        {
+            this.Type = typeof(T);
+            this.Options = options;
+        }
+    }
+#endif
+
     [Flags]
     internal enum UnitGenerateOptions
     {
@@ -1100,16 +1125,28 @@ namespace {{ns}}
 
         class SyntaxReceiver : ISyntaxReceiver
         {
-            public List<(StructDeclarationSyntax type, AttributeSyntax attr)> Targets { get; } = new();
+            public List<(StructDeclarationSyntax type, AttributeSyntax attr, PredefinedTypeSyntax? targetType)> Targets { get; } = new();
 
             public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
             {
                 if (syntaxNode is StructDeclarationSyntax s && s.AttributeLists.Count > 0)
                 {
-                    var attr = s.AttributeLists.SelectMany(x => x.Attributes).FirstOrDefault(x => x.Name.ToString() is "UnitOf" or "UnitOfAttribute" or "UnitGenerator.UnitOf" or "UnitGenerator.UnitOfAttribute");
+                    var attr = (from attributesList in s.AttributeLists
+                                from attribute in attributesList.Attributes
+                                let attributeName = attribute.Name switch
+                                {
+                                    QualifiedNameSyntax qName => qName.Right.Identifier.Text,
+                                    AliasQualifiedNameSyntax qName => qName.Name.Identifier.Text,
+                                    SimpleNameSyntax name => name.Identifier.Text,
+                                    _ => attribute.Name.ToString(),
+                                }
+                                let targetType = attribute.Name is GenericNameSyntax gName ? gName.TypeArgumentList.ChildNodes().FirstOrDefault() as PredefinedTypeSyntax : null
+                                where attributeName is "UnitOf" or "UnitOfAttribute"
+                                select new { attribute, targetType }).FirstOrDefault();
+
                     if (attr != null)
                     {
-                        Targets.Add((s, attr));
+                        Targets.Add((s, attr.attribute, attr.targetType));
                     }
                 }
             }

@@ -71,10 +71,7 @@ namespace FileGenerate
             return value.GetHashCode();
         }
 
-        public override string ToString()
-        {
-            return value.ToString();
-        }
+        public override string ToString() => value.ToString();
 
         // Default
         

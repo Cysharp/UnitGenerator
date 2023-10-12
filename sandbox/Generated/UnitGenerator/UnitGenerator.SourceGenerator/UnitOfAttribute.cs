@@ -25,6 +25,23 @@ namespace UnitGenerator
         }
     }
     
+#if NET7_0_OR_GREATER
+    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
+    internal class UnitOfAttribute<T> : Attribute
+    {
+        public Type Type { get; }
+        public UnitGenerateOptions Options { get; }
+        public UnitArithmeticOperators ArithmeticOperators { get; set; } = UnitArithmeticOperators.All;
+        public string? ToStringFormat { get; set; }
+
+        public UnitOfAttribute(UnitGenerateOptions options = UnitGenerateOptions.None)
+        {
+            this.Type = typeof(T);
+            this.Options = options;
+        }
+    }
+#endif
+
     [Flags]
     internal enum UnitGenerateOptions
     {

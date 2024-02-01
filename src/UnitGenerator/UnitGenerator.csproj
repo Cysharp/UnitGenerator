@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>preview</LangVersion>
+        <LangVersion>12</LangVersion>
         <Nullable>enable</Nullable>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
         <IsRoslynComponent>true</IsRoslynComponent>

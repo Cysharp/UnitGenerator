@@ -15,6 +15,7 @@ namespace FileGenerate
 #if NET7_0_OR_GREATER
         , IEqualityOperators<A, A, bool>
 #endif    
+        , IFormattable
     {
         readonly int value;
 
@@ -72,6 +73,8 @@ namespace FileGenerate
         }
 
         public override string ToString() => value.ToString();
+
+        public string ToString(string? format, IFormatProvider? formatProvider) => value.ToString(format, formatProvider);
 
         // Default
         

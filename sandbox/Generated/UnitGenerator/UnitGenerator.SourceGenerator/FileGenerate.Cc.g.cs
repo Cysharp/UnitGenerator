@@ -19,6 +19,7 @@ namespace FileGenerate
 #if NET7_0_OR_GREATER
         , IComparisonOperators<Cc, Cc, bool>
 #endif
+        , IFormattable
 #if NET7_0_OR_GREATER
         , IAdditionOperators<Cc, Cc, Cc>
         , ISubtractionOperators<Cc, Cc, Cc>
@@ -86,6 +87,8 @@ namespace FileGenerate
         }
 
         public override string ToString() => value.ToString();
+
+        public string ToString(string? format, IFormatProvider? formatProvider) => value.ToString(format, formatProvider);
 
         // UnitGenerateOptions.ArithmeticOperator
         

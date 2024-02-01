@@ -20,6 +20,10 @@ namespace FileGenerate
         , IComparisonOperators<C, C, bool>
 #endif
 #if NET7_0_OR_GREATER
+        , IParsable<C>
+#endif
+        , IFormattable
+#if NET7_0_OR_GREATER
         , IAdditionOperators<C, C, C>
         , ISubtractionOperators<C, C, C>
         , IMultiplyOperators<C, C, C>
@@ -86,6 +90,48 @@ namespace FileGenerate
         }
 
         public override string ToString() => value.ToString();
+
+        public string ToString(string? format, IFormatProvider? formatProvider) => value.ToString(format, formatProvider);
+
+        // UnitGenerateOptions.ParseMethod
+        
+        public static C Parse(string s)
+        {
+            return new C(int.Parse(s));
+        }
+ 
+        public static bool TryParse(string s, out C result)
+        {
+            if (int.TryParse(s, out var r))
+            {
+                result = new C(r);
+                return true;
+            }
+            else
+            {
+                result = default(C);
+                return false;
+            }
+        }
+
+        public static C Parse(string s, IFormatProvider? provider)
+        {
+            return new C(int.Parse(s));
+        }
+ 
+        public static bool TryParse(string s, IFormatProvider? provider, out C result)
+        {
+            if (int.TryParse(s, out var r))
+            {
+                result = new C(r);
+                return true;
+            }
+            else
+            {
+                result = default(C);
+                return false;
+            }
+        }
 
         // UnitGenerateOptions.ArithmeticOperator
         

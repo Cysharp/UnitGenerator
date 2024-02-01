@@ -12,9 +12,9 @@ namespace FileGenerate
     [System.ComponentModel.TypeConverter(typeof(BTypeConverter))]
     readonly partial struct B 
         : IEquatable<B>
-#if NET7_0_OR_GREATER
+#if NET8_0_OR_GREATER
         , IEqualityOperators<B, B, bool>
-#endif    
+#endif
     {
         readonly string value;
 

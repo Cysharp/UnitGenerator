@@ -12,10 +12,13 @@ namespace FileGenerate
     [System.ComponentModel.TypeConverter(typeof(ATypeConverter))]
     readonly partial struct A 
         : IEquatable<A>
-#if NET7_0_OR_GREATER
-        , IEqualityOperators<A, A, bool>
-#endif    
         , IFormattable
+#if NET6_0_OR_GREATER
+        , ISpanFormattable
+#endif
+#if NET8_0_OR_GREATER
+        , IEqualityOperators<A, A, bool>
+#endif
     {
         readonly int value;
 
@@ -76,6 +79,10 @@ namespace FileGenerate
 
         public string ToString(string? format, IFormatProvider? formatProvider) => value.ToString(format, formatProvider);
 
+#if NET6_0_OR_GREATER
+        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => 
+            ((ISpanFormattable)value).TryFormat(destination, out charsWritten, format, provider);
+#endif
         // Default
         
         private class ATypeConverter : System.ComponentModel.TypeConverter

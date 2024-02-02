@@ -12,7 +12,7 @@ namespace FileGenerate
     {
     }
     
-    [UnitOf(typeof(int), UnitGenerateOptions.Comparable | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator)]
+    [UnitOf(typeof(int), UnitGenerateOptions.Comparable | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.ParseMethod)]
     public readonly partial struct C
     {
     }

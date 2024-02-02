@@ -25,13 +25,18 @@ namespace UnitGenerator
                 var receiver = context.SyntaxReceiver as SyntaxReceiver;
                 if (receiver == null) return;
 
+                var symbols = ReferenceSymbols.Create(context.Compilation);
                 var list = new List<(StructDeclarationSyntax, UnitOfAttributeProperty)>();
                 foreach (var (type, attr, targetType) in receiver.Targets)
                 {
                     var model = context.Compilation.GetSemanticModel(type.SyntaxTree);
 
                     // retrieve attribute parameter
-                    var prop = new UnitOfAttributeProperty { ArithmeticOperators = UnitArithmeticOperators.All };
+                    var prop = new UnitOfAttributeProperty
+                    {
+                        ReferenceSymbols = symbols,
+                        ArithmeticOperators = UnitArithmeticOperators.All
+                    };
 
                     if(targetType is not null)
                     {
@@ -258,71 +263,127 @@ namespace {{ns}}
 """);
             }
 
+            var anyPlatformInterfaces = new List<string>();
+            var net6Interfaces = new List<string>();
+            var net7Interfaces = new List<string>();
+            var net8Interfaces = new List<string>
+            {
+                $"IEqualityOperators<{unitTypeName}, {unitTypeName}, bool>"
+            };
+
             sb.AppendLine($$"""
     [System.ComponentModel.TypeConverter(typeof({{unitTypeName}}TypeConverter))]
     readonly partial struct {{unitTypeName}} 
         : IEquatable<{{unitTypeName}}>
-#if NET7_0_OR_GREATER
-        , IEqualityOperators<{{unitTypeName}}, {{unitTypeName}}, bool>
-#endif    
 """);
             if (prop.HasFlag(UnitGenerateOptions.Comparable) && 
                 !prop.HasFlag(UnitGenerateOptions.WithoutComparisonOperator))
             {
-                sb.AppendLine($$"""
-        , IComparable<{{unitTypeName}}>
-#if NET7_0_OR_GREATER
-        , IComparisonOperators<{{unitTypeName}}, {{unitTypeName}}, bool>
-#endif
-""");
+                anyPlatformInterfaces.Add($"IComparable<{unitTypeName}>");
+                net7Interfaces.Add($"IComparisonOperators<{unitTypeName}, {unitTypeName}, bool>");
             }
+            if (prop.HasFormattableInterface())
+            {
+                anyPlatformInterfaces.Add("IFormattable");
+            }
+            if (prop.HasSpanFormattableInterface())
+            {
+                net6Interfaces.Add($"ISpanFormattable");
+            }
+            if (prop.HasUtf8SpanFormattableInterface())
+            {
+                net8Interfaces.Add($"IUtf8SpanFormattable");
+            }
+            if (prop.HasFlag(UnitGenerateOptions.ParseMethod))
+            {
+                if (prop.HasParsableInterface())
+                {
+                    net7Interfaces.Add($"IParsable<{unitTypeName}>");
+                }
+                if (prop.HasSpanParsableInterface())
+                {
+                    net7Interfaces.Add($"ISpanParsable<{unitTypeName}>");
+                }
+                if (prop.HasUtf8SpanParsableInterface())
+                {
+                    net8Interfaces.Add($"IUtf8SpanParsable<{unitTypeName}>");
+                }
+            }
+            
             if (prop.HasFlag(UnitGenerateOptions.ArithmeticOperator))
             {
-                sb.AppendLine("#if NET7_0_OR_GREATER");
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Addition))
                 {
-                    sb.AppendLine($$"""
-        , IAdditionOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
-""");
+                    net7Interfaces.Add($"IAdditionOperators<{unitTypeName}, {unitTypeName}, {unitTypeName}>");
                 }
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Subtraction))
                 {
-                    sb.AppendLine($$"""
-        , ISubtractionOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
-""");
+                    net7Interfaces.Add($"ISubtractionOperators<{unitTypeName}, {unitTypeName}, {unitTypeName}>");
                 }
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Multiply))
                 {
-                    sb.AppendLine($$"""
-        , IMultiplyOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
-""");
+                    net7Interfaces.Add($"IMultiplyOperators<{unitTypeName}, {unitTypeName}, {unitTypeName}>");
                 }
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Division))
                 {
-                    sb.AppendLine($$"""
-        , IDivisionOperators<{{unitTypeName}}, {{unitTypeName}}, {{unitTypeName}}>
-""");
+                    net7Interfaces.Add($"IDivisionOperators<{unitTypeName}, {unitTypeName}, {unitTypeName}>");
                 }
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Multiply) ||
                     prop.HasArithmeticOperator(UnitArithmeticOperators.Division))
                 {
-                    sb.AppendLine($$"""
-        , IUnaryPlusOperators<{{unitTypeName}}, {{unitTypeName}}>
-        , IUnaryNegationOperators<{{unitTypeName}}, {{unitTypeName}}>
-""");
+                    net7Interfaces.Add($"IUnaryPlusOperators<{unitTypeName}, {unitTypeName}>");
+                    net7Interfaces.Add($"IUnaryNegationOperators<{unitTypeName}, {unitTypeName}>");
                 }
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Increment))
                 {
-                    sb.AppendLine($$"""
-        , IIncrementOperators<{{unitTypeName}}>
-""");
+                    net7Interfaces.Add($"IIncrementOperators<{unitTypeName}>");
                 }
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Decrement))
                 {
-                    sb.AppendLine($$"""
-        , IDecrementOperators<{{unitTypeName}}>
-""");
+                    net7Interfaces.Add($"IDecrementOperators<{unitTypeName}>");
                 }
+            }
+
+            foreach (var interfaceName in anyPlatformInterfaces)
+            {
+                sb.AppendLine($"        , {interfaceName}");
+            }
+            if (net6Interfaces.Count > 0)
+            {
+                sb.AppendLine("#if NET6_0_OR_GREATER");
+            }
+            foreach (var interfaceName in net6Interfaces)
+            {
+                sb.AppendLine($"        , {interfaceName}");
+            }
+            if (net6Interfaces.Count > 0)
+            {
+                sb.AppendLine("#endif");
+            }
+            
+            if (net7Interfaces.Count > 0)
+            {
+                sb.AppendLine("#if NET7_0_OR_GREATER");
+            }
+            foreach (var interfaceName in net7Interfaces)
+            {
+                sb.AppendLine($"        , {interfaceName}");
+            }
+            if (net7Interfaces.Count > 0)
+            {
+                sb.AppendLine("#endif");
+            }
+            
+            if (net8Interfaces.Count > 0)
+            {
+                sb.AppendLine("#if NET8_0_OR_GREATER");
+            }
+            foreach (var interfaceName in net8Interfaces)
+            {
+                sb.AppendLine($"        , {interfaceName}");
+            }
+            if (net8Interfaces.Count > 0)
+            {
                 sb.AppendLine("#endif");
             }
 
@@ -453,6 +514,33 @@ namespace {{ns}}
                 }
             }
 
+            if (prop.HasFormattableInterface())
+            {
+                    sb.AppendLine("""
+        public string ToString(string? format, IFormatProvider? formatProvider) => value.ToString(format, formatProvider);
+
+""");
+            }
+            if (prop.HasSpanFormattableInterface())
+            {
+                    sb.AppendLine("""
+#if NET6_0_OR_GREATER
+        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => 
+            ((ISpanFormattable)value).TryFormat(destination, out charsWritten, format, provider);
+#endif
+""");
+            }
+            if (prop.HasUtf8SpanFormattableInterface())
+            {
+                    sb.AppendLine("""
+#if NET8_0_OR_GREATER        
+        public bool TryFormat (Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider) =>
+            ((IUtf8SpanFormattable)value).TryFormat(utf8Destination, out bytesWritten, format, provider);
+#endif
+
+""");
+            }
+
             if (prop.IsGuid())
             {
                 sb.AppendLine($$"""
@@ -543,7 +631,88 @@ namespace {{ns}}
 
 """);
                 }
+
+                if (prop.HasParsableInterface())
+                {
+                    sb.AppendLine($$"""
+#if NET7_0_OR_GREATER
+        public static {{unitTypeName}} Parse(string s, IFormatProvider? provider)
+        {
+            return new {{unitTypeName}}({{innerTypeName}}.Parse(s, provider));
+        }
+ 
+        public static bool TryParse(string s, IFormatProvider? provider, out {{unitTypeName}} result)
+        {
+            if ({{innerTypeName}}.TryParse(s, provider, out var r))
+            {
+                result = new {{unitTypeName}}(r);
+                return true;
             }
+            else
+            {
+                result = default({{unitTypeName}});
+                return false;
+            }
+        }
+#endif
+
+""");
+                }
+                if (prop.HasSpanParsableInterface())
+                {
+                    sb.AppendLine($$"""
+#if NET7_0_OR_GREATER
+        public static {{unitTypeName}} Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+        {
+            return new {{unitTypeName}}({{innerTypeName}}.Parse(s, provider));
+        }
+ 
+        public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out {{unitTypeName}} result)
+        {
+            if ({{innerTypeName}}.TryParse(s, provider, out var r))
+            {
+                result = new {{unitTypeName}}(r);
+                return true;
+            }
+            else
+            {
+                result = default({{unitTypeName}});
+                return false;
+            }
+        }
+#endif
+
+""");
+                }
+
+                if (prop.HasUtf8SpanParsableInterface())
+                {
+                    sb.AppendLine($$"""
+#if NET8_0_OR_GREATER
+        public static {{unitTypeName}} Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
+        {
+            return new {{unitTypeName}}({{innerTypeName}}.Parse(utf8Text, provider));
+        }
+ 
+        public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, out {{unitTypeName}} result)
+        {
+            if ({{innerTypeName}}.TryParse(utf8Text, provider, out var r))
+            {
+                result = new {{unitTypeName}}(r);
+                return true;
+            }
+            else
+            {
+                result = default({{unitTypeName}});
+                return false;
+            }
+        }
+#endif
+
+""");
+                }
+            }
+            
             if (prop.HasFlag(UnitGenerateOptions.MinMaxMethod))
             {
                 sb.AppendLine($$"""
@@ -1049,6 +1218,7 @@ namespace {{ns}}
 
         struct UnitOfAttributeProperty
         {
+            public ReferenceSymbols ReferenceSymbols { get; set; }
             public ITypeSymbol Type { get; set; }
             public UnitGenerateOptions Options { get; set; }
             public UnitArithmeticOperators ArithmeticOperators { get; set; }
@@ -1057,8 +1227,8 @@ namespace {{ns}}
 
             public bool IsString() => TypeName is "string";
             public bool IsBool() => TypeName is "bool";
-            public bool IsUlid() => TypeName is "Ulid" or "System.Ulid";
-            public bool IsGuid() => TypeName is "Guid" or "System.Guid";
+            public bool IsUlid() => SymbolEqualityComparer.Default.Equals(Type, ReferenceSymbols.UlidType);
+            public bool IsGuid() => SymbolEqualityComparer.Default.Equals(Type, ReferenceSymbols.GuidType);
 
             public bool HasFlag(UnitGenerateOptions options) => Options.HasFlag(options);
 
@@ -1071,6 +1241,13 @@ namespace {{ns}}
             {
                 return HasFlag(UnitGenerateOptions.ValueArithmeticOperator) && ArithmeticOperators.HasFlag(op);
             }
+
+            public bool HasFormattableInterface() => IsImplemented(ReferenceSymbols.FormattableInterface);
+            public bool HasParsableInterface() => ReferenceSymbols.ParsableInterface != null && IsImplementedGenericSelfType(ReferenceSymbols.ParsableInterface);
+            public bool HasSpanFormattableInterface() => ReferenceSymbols.SpanFormattableInterface != null && IsImplemented(ReferenceSymbols.SpanFormattableInterface);
+            public bool HasSpanParsableInterface() => ReferenceSymbols.SpanParsableInterface != null && IsImplementedGenericSelfType(ReferenceSymbols.SpanParsableInterface);
+            public bool HasUtf8SpanFormattableInterface() => ReferenceSymbols.Utf8SpanFormattableInterface != null && IsImplemented(ReferenceSymbols.Utf8SpanFormattableInterface);
+            public bool HasUtf8SpanParsableInterface() => ReferenceSymbols.ParsableInterface != null && IsImplementedGenericSelfType(ReferenceSymbols.ParsableInterface);
 
             public DbType GetDbType()
             {
@@ -1119,6 +1296,32 @@ namespace {{ns}}
                     "System.Guid" => true,
                     _ => false
                 };
+            }
+            
+            bool IsImplemented(INamedTypeSymbol interfaceSymbol)
+            {
+                foreach (var x in Type.AllInterfaces)
+                {
+                    if (SymbolEqualityComparer.Default.Equals(x, interfaceSymbol))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            bool IsImplementedGenericSelfType(INamedTypeSymbol interfaceSymbol)
+            {
+                foreach (var x in Type.AllInterfaces)
+                {
+                    if (x.IsGenericType &&
+                        SymbolEqualityComparer.Default.Equals(x.ConstructedFrom, interfaceSymbol) &&
+                        SymbolEqualityComparer.Default.Equals(x.TypeArguments[0], Type))
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
 

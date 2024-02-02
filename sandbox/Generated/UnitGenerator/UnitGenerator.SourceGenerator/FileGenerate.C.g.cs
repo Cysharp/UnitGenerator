@@ -12,14 +12,15 @@ namespace FileGenerate
     [System.ComponentModel.TypeConverter(typeof(CTypeConverter))]
     readonly partial struct C 
         : IEquatable<C>
-#if NET7_0_OR_GREATER
-        , IEqualityOperators<C, C, bool>
-#endif    
         , IComparable<C>
-#if NET7_0_OR_GREATER
-        , IComparisonOperators<C, C, bool>
+        , IFormattable
+#if NET6_0_OR_GREATER
+        , ISpanFormattable
 #endif
 #if NET7_0_OR_GREATER
+        , IComparisonOperators<C, C, bool>
+        , IParsable<C>
+        , ISpanParsable<C>
         , IAdditionOperators<C, C, C>
         , ISubtractionOperators<C, C, C>
         , IMultiplyOperators<C, C, C>
@@ -28,6 +29,10 @@ namespace FileGenerate
         , IUnaryNegationOperators<C, C>
         , IIncrementOperators<C>
         , IDecrementOperators<C>
+#endif
+#if NET8_0_OR_GREATER
+        , IEqualityOperators<C, C, bool>
+        , IUtf8SpanParsable<C>
 #endif
     {
         readonly int value;
@@ -86,6 +91,96 @@ namespace FileGenerate
         }
 
         public override string ToString() => value.ToString();
+
+        public string ToString(string? format, IFormatProvider? formatProvider) => value.ToString(format, formatProvider);
+
+#if NET6_0_OR_GREATER
+        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => 
+            ((ISpanFormattable)value).TryFormat(destination, out charsWritten, format, provider);
+#endif
+        // UnitGenerateOptions.ParseMethod
+        
+        public static C Parse(string s)
+        {
+            return new C(int.Parse(s));
+        }
+ 
+        public static bool TryParse(string s, out C result)
+        {
+            if (int.TryParse(s, out var r))
+            {
+                result = new C(r);
+                return true;
+            }
+            else
+            {
+                result = default(C);
+                return false;
+            }
+        }
+
+#if NET7_0_OR_GREATER
+        public static C Parse(string s, IFormatProvider? provider)
+        {
+            return new C(int.Parse(s, provider));
+        }
+ 
+        public static bool TryParse(string s, IFormatProvider? provider, out C result)
+        {
+            if (int.TryParse(s, provider, out var r))
+            {
+                result = new C(r);
+                return true;
+            }
+            else
+            {
+                result = default(C);
+                return false;
+            }
+        }
+#endif
+
+#if NET7_0_OR_GREATER
+        public static C Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+        {
+            return new C(int.Parse(s, provider));
+        }
+ 
+        public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out C result)
+        {
+            if (int.TryParse(s, provider, out var r))
+            {
+                result = new C(r);
+                return true;
+            }
+            else
+            {
+                result = default(C);
+                return false;
+            }
+        }
+#endif
+
+#if NET8_0_OR_GREATER
+        public static C Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
+        {
+            return new C(int.Parse(utf8Text, provider));
+        }
+ 
+        public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, out C result)
+        {
+            if (int.TryParse(utf8Text, provider, out var r))
+            {
+                result = new C(r);
+                return true;
+            }
+            else
+            {
+                result = default(C);
+                return false;
+            }
+        }
+#endif
 
         // UnitGenerateOptions.ArithmeticOperator
         

@@ -9,33 +9,33 @@ using System.Numerics;
 #endif
 namespace FileGenerate
 {
-    [System.ComponentModel.TypeConverter(typeof(ATypeConverter))]
-    readonly partial struct A 
-        : IEquatable<A>
+    [System.ComponentModel.TypeConverter(typeof(AaTypeConverter))]
+    readonly partial struct Aa 
+        : IEquatable<Aa>
 #if NET7_0_OR_GREATER
-        , IEqualityOperators<A, A, bool>
+        , IEqualityOperators<Aa, Aa, bool>
 #endif    
     {
         readonly int value;
 
         public int AsPrimitive() => value;
 
-        public A(int value)
+        public Aa(int value)
         {
             this.value = value;
         }
         
-        public static explicit operator int(A value)
+        public static explicit operator int(Aa value)
         {
             return value.value;
         }
 
-        public static explicit operator A(int value)
+        public static explicit operator Aa(int value)
         {
-            return new A(value);
+            return new Aa(value);
         }
 
-        public bool Equals(A other)
+        public bool Equals(Aa other)
         {
             return value.Equals(other.value);
         }
@@ -44,9 +44,9 @@ namespace FileGenerate
         {
             if (obj == null) return false;
             var t = obj.GetType();
-            if (t == typeof(A))
+            if (t == typeof(Aa))
             {
-                return Equals((A)obj);
+                return Equals((Aa)obj);
             }
             if (t == typeof(int))
             {
@@ -56,12 +56,12 @@ namespace FileGenerate
             return value.Equals(obj);
         }
         
-        public static bool operator ==(A x, A y)
+        public static bool operator ==(Aa x, Aa y)
         {
             return x.value.Equals(y.value);
         }
 
-        public static bool operator !=(A x, A y)
+        public static bool operator !=(Aa x, Aa y)
         {
             return !x.value.Equals(y.value);
         }
@@ -75,9 +75,9 @@ namespace FileGenerate
 
         // Default
         
-        private class ATypeConverter : System.ComponentModel.TypeConverter
+        private class AaTypeConverter : System.ComponentModel.TypeConverter
         {
-            private static readonly Type WrapperType = typeof(A);
+            private static readonly Type WrapperType = typeof(Aa);
             private static readonly Type ValueType = typeof(int);
 
             public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, Type sourceType)
@@ -105,13 +105,13 @@ namespace FileGenerate
                 if (value != null)
                 {
                     var t = value.GetType();
-                    if (t == typeof(A))
+                    if (t == typeof(Aa))
                     {
-                        return (A)value;
+                        return (Aa)value;
                     }
                     if (t == typeof(int))
                     {
-                        return new A((int)value);
+                        return new Aa((int)value);
                     }
                 }
 
@@ -120,7 +120,7 @@ namespace FileGenerate
 
             public override object ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
             {
-                if (value is A wrappedValue)
+                if (value is Aa wrappedValue)
                 {
                     if (destinationType == WrapperType)
                     {

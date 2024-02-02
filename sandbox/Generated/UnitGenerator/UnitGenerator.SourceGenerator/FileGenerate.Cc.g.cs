@@ -9,47 +9,47 @@ using System.Numerics;
 #endif
 namespace FileGenerate
 {
-    [System.ComponentModel.TypeConverter(typeof(CTypeConverter))]
-    readonly partial struct C 
-        : IEquatable<C>
+    [System.ComponentModel.TypeConverter(typeof(CcTypeConverter))]
+    readonly partial struct Cc 
+        : IEquatable<Cc>
 #if NET7_0_OR_GREATER
-        , IEqualityOperators<C, C, bool>
+        , IEqualityOperators<Cc, Cc, bool>
 #endif    
-        , IComparable<C>
+        , IComparable<Cc>
 #if NET7_0_OR_GREATER
-        , IComparisonOperators<C, C, bool>
+        , IComparisonOperators<Cc, Cc, bool>
 #endif
 #if NET7_0_OR_GREATER
-        , IAdditionOperators<C, C, C>
-        , ISubtractionOperators<C, C, C>
-        , IMultiplyOperators<C, C, C>
-        , IDivisionOperators<C, C, C>
-        , IUnaryPlusOperators<C, C>
-        , IUnaryNegationOperators<C, C>
-        , IIncrementOperators<C>
-        , IDecrementOperators<C>
+        , IAdditionOperators<Cc, Cc, Cc>
+        , ISubtractionOperators<Cc, Cc, Cc>
+        , IMultiplyOperators<Cc, Cc, Cc>
+        , IDivisionOperators<Cc, Cc, Cc>
+        , IUnaryPlusOperators<Cc, Cc>
+        , IUnaryNegationOperators<Cc, Cc>
+        , IIncrementOperators<Cc>
+        , IDecrementOperators<Cc>
 #endif
     {
         readonly int value;
 
         public int AsPrimitive() => value;
 
-        public C(int value)
+        public Cc(int value)
         {
             this.value = value;
         }
         
-        public static explicit operator int(C value)
+        public static explicit operator int(Cc value)
         {
             return value.value;
         }
 
-        public static explicit operator C(int value)
+        public static explicit operator Cc(int value)
         {
-            return new C(value);
+            return new Cc(value);
         }
 
-        public bool Equals(C other)
+        public bool Equals(Cc other)
         {
             return value.Equals(other.value);
         }
@@ -58,9 +58,9 @@ namespace FileGenerate
         {
             if (obj == null) return false;
             var t = obj.GetType();
-            if (t == typeof(C))
+            if (t == typeof(Cc))
             {
-                return Equals((C)obj);
+                return Equals((Cc)obj);
             }
             if (t == typeof(int))
             {
@@ -70,12 +70,12 @@ namespace FileGenerate
             return value.Equals(obj);
         }
         
-        public static bool operator ==(C x, C y)
+        public static bool operator ==(Cc x, Cc y)
         {
             return x.value.Equals(y.value);
         }
 
-        public static bool operator !=(C x, C y)
+        public static bool operator !=(Cc x, Cc y)
         {
             return !x.value.Equals(y.value);
         }
@@ -89,124 +89,124 @@ namespace FileGenerate
 
         // UnitGenerateOptions.ArithmeticOperator
         
-        public static C operator +(C x, C y)
+        public static Cc operator +(Cc x, Cc y)
         {
             checked
             {
-                return new C((int)(x.value + y.value));
+                return new Cc((int)(x.value + y.value));
             }
         }
 
-        public static C operator -(C x, C y)
+        public static Cc operator -(Cc x, Cc y)
         {
             checked
             {
-                return new C((int)(x.value - y.value));
+                return new Cc((int)(x.value - y.value));
             }
         }
 
-        public static C operator +(C value) => new((int)(+value.value));
-        public static C operator -(C value) => new((int)(-value.value));
+        public static Cc operator +(Cc value) => new((int)(+value.value));
+        public static Cc operator -(Cc value) => new((int)(-value.value));
 
-        public static C operator *(C x, C y)
+        public static Cc operator *(Cc x, Cc y)
         {
             checked
             {
-                return new C((int)(x.value * y.value));
+                return new Cc((int)(x.value * y.value));
             }
         }
 
 
-        public static C operator /(C x, C y)
+        public static Cc operator /(Cc x, Cc y)
         {
             checked
             {
-                return new C((int)(x.value / y.value));
+                return new Cc((int)(x.value / y.value));
             }
         }
 
-        public static C operator ++(C x)
+        public static Cc operator ++(Cc x)
         {
             checked
             {
-                return new C((int)((int)(x.value + 1)));
+                return new Cc((int)((int)(x.value + 1)));
             }
         }
 
-        public static C operator --(C x)
+        public static Cc operator --(Cc x)
         {
             checked
             {
-                return new C((int)((int)(x.value - 1)));
+                return new Cc((int)((int)(x.value - 1)));
             }
         }
 
         // UnitGenerateOptions.ValueArithmeticOperator
         
-        public static C operator +(C x, int y)
+        public static Cc operator +(Cc x, int y)
         {
             checked
             {
-                return new C((int)(x.value + y));
+                return new Cc((int)(x.value + y));
             }
         }
 
-        public static C operator -(C x, int y)
+        public static Cc operator -(Cc x, int y)
         {
             checked
             {
-                return new C((int)(x.value - y));
+                return new Cc((int)(x.value - y));
             }
         }
 
-        public static C operator *(C x, int y)
+        public static Cc operator *(Cc x, int y)
         {
             checked
             {
-                return new C((int)(x.value * y));
+                return new Cc((int)(x.value * y));
             }
         }
 
 
-        public static C operator /(C x, int y)
+        public static Cc operator /(Cc x, int y)
         {
             checked
             {
-                return new C((int)(x.value / y));
+                return new Cc((int)(x.value / y));
             }
         }
 
         // UnitGenerateOptions.Comparable
 
-        public int CompareTo(C other)
+        public int CompareTo(Cc other)
         {
             return value.CompareTo(other.value);
         }
-        public static bool operator >(C x, C y)
+        public static bool operator >(Cc x, Cc y)
         {
             return x.value > y.value;
         }
 
-        public static bool operator <(C x, C y)
+        public static bool operator <(Cc x, Cc y)
         {
             return x.value < y.value;
         }
 
-        public static bool operator >=(C x, C y)
+        public static bool operator >=(Cc x, Cc y)
         {
             return x.value >= y.value;
         }
 
-        public static bool operator <=(C x, C y)
+        public static bool operator <=(Cc x, Cc y)
         {
             return x.value <= y.value;
         }
 
         // Default
         
-        private class CTypeConverter : System.ComponentModel.TypeConverter
+        private class CcTypeConverter : System.ComponentModel.TypeConverter
         {
-            private static readonly Type WrapperType = typeof(C);
+            private static readonly Type WrapperType = typeof(Cc);
             private static readonly Type ValueType = typeof(int);
 
             public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, Type sourceType)
@@ -234,13 +234,13 @@ namespace FileGenerate
                 if (value != null)
                 {
                     var t = value.GetType();
-                    if (t == typeof(C))
+                    if (t == typeof(Cc))
                     {
-                        return (C)value;
+                        return (Cc)value;
                     }
                     if (t == typeof(int))
                     {
-                        return new C((int)value);
+                        return new Cc((int)value);
                     }
                 }
 
@@ -249,7 +249,7 @@ namespace FileGenerate
 
             public override object ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
             {
-                if (value is C wrappedValue)
+                if (value is Cc wrappedValue)
                 {
                     if (destinationType == WrapperType)
                     {

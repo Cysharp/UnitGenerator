@@ -21,6 +21,15 @@ using UnitGenerator;
 public readonly partial struct UserId { }
 ```
 
+or when using C#11 and NET7 you can use
+
+```csharp
+using UnitGenerator;
+
+[UnitOf<int>]
+public readonly partial struct UserId { }
+```
+
 will generates
 
 ```csharp
@@ -216,10 +225,27 @@ namespace UnitGenerator
         public Type Type { get; }
         public UnitGenerateOptions Options { get; }
         public UnitArithmeticOperators ArithmeticOperators { get; set; }
-        public string ToStringFormat { get; set; }
+        public string? ToStringFormat { get; set; }
         
         public UnitOfAttribute(Type type, UnitGenerateOptions options = UnitGenerateOptions.None) { ... }
     }
+
+#if NET7_0_OR_GREATER
+    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
+    internal class UnitOfAttribute<T> : Attribute
+    {
+        public Type Type { get; }
+        public UnitGenerateOptions Options { get; }
+        public UnitArithmeticOperators ArithmeticOperators { get; set; } = UnitArithmeticOperators.All;
+        public string? ToStringFormat { get; set; }
+
+        public UnitOfAttribute(UnitGenerateOptions options = UnitGenerateOptions.None)
+        {
+            this.Type = typeof(T);
+            this.Options = options;
+        }
+    }
+#endif
 }
 ```
 

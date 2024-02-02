@@ -9,33 +9,33 @@ using System.Numerics;
 #endif
 namespace FileGenerate
 {
-    [System.ComponentModel.TypeConverter(typeof(ATypeConverter))]
-    readonly partial struct A 
-        : IEquatable<A>
+    [System.ComponentModel.TypeConverter(typeof(BbTypeConverter))]
+    readonly partial struct Bb 
+        : IEquatable<Bb>
 #if NET7_0_OR_GREATER
-        , IEqualityOperators<A, A, bool>
+        , IEqualityOperators<Bb, Bb, bool>
 #endif    
     {
-        readonly int value;
+        readonly string value;
 
-        public int AsPrimitive() => value;
+        public string AsPrimitive() => value;
 
-        public A(int value)
+        public Bb(string value)
         {
             this.value = value;
         }
         
-        public static explicit operator int(A value)
+        public static explicit operator string(Bb value)
         {
             return value.value;
         }
 
-        public static explicit operator A(int value)
+        public static explicit operator Bb(string value)
         {
-            return new A(value);
+            return new Bb(value);
         }
 
-        public bool Equals(A other)
+        public bool Equals(Bb other)
         {
             return value.Equals(other.value);
         }
@@ -44,24 +44,24 @@ namespace FileGenerate
         {
             if (obj == null) return false;
             var t = obj.GetType();
-            if (t == typeof(A))
+            if (t == typeof(Bb))
             {
-                return Equals((A)obj);
+                return Equals((Bb)obj);
             }
-            if (t == typeof(int))
+            if (t == typeof(string))
             {
-                return value.Equals((int)obj);
+                return value.Equals((string)obj);
             }
 
             return value.Equals(obj);
         }
         
-        public static bool operator ==(A x, A y)
+        public static bool operator ==(Bb x, Bb y)
         {
             return x.value.Equals(y.value);
         }
 
-        public static bool operator !=(A x, A y)
+        public static bool operator !=(Bb x, Bb y)
         {
             return !x.value.Equals(y.value);
         }
@@ -71,14 +71,14 @@ namespace FileGenerate
             return value.GetHashCode();
         }
 
-        public override string ToString() => value.ToString();
+        public override string ToString() => value == null ? "null" : value.ToString(); 
 
         // Default
         
-        private class ATypeConverter : System.ComponentModel.TypeConverter
+        private class BbTypeConverter : System.ComponentModel.TypeConverter
         {
-            private static readonly Type WrapperType = typeof(A);
-            private static readonly Type ValueType = typeof(int);
+            private static readonly Type WrapperType = typeof(Bb);
+            private static readonly Type ValueType = typeof(string);
 
             public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, Type sourceType)
             {
@@ -105,13 +105,13 @@ namespace FileGenerate
                 if (value != null)
                 {
                     var t = value.GetType();
-                    if (t == typeof(A))
+                    if (t == typeof(Bb))
                     {
-                        return (A)value;
+                        return (Bb)value;
                     }
-                    if (t == typeof(int))
+                    if (t == typeof(string))
                     {
-                        return new A((int)value);
+                        return new Bb((string)value);
                     }
                 }
 
@@ -120,7 +120,7 @@ namespace FileGenerate
 
             public override object ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
             {
-                if (value is A wrappedValue)
+                if (value is Bb wrappedValue)
                 {
                     if (destinationType == WrapperType)
                     {

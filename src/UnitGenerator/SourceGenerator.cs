@@ -1357,7 +1357,7 @@ namespace {{ns}}
 
         class SyntaxReceiver : ISyntaxReceiver
         {
-            public List<(StructDeclarationSyntax type, AttributeSyntax attr, PredefinedTypeSyntax? targetType)> Targets { get; } = new();
+            public List<(StructDeclarationSyntax type, AttributeSyntax attr, TypeSyntax? targetType)> Targets { get; } = new();
 
             public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
             {
@@ -1372,7 +1372,7 @@ namespace {{ns}}
                                     SimpleNameSyntax name => name.Identifier.Text,
                                     _ => attribute.Name.ToString(),
                                 }
-                                let targetType = attribute.Name is GenericNameSyntax gName ? gName.TypeArgumentList.ChildNodes().FirstOrDefault() as PredefinedTypeSyntax : null
+                                let targetType = attribute.Name is GenericNameSyntax gName ? gName.TypeArgumentList.ChildNodes().FirstOrDefault() as TypeSyntax : null
                                 where attributeName is "UnitOf" or "UnitOfAttribute"
                                 select new { attribute, targetType }).FirstOrDefault();
 

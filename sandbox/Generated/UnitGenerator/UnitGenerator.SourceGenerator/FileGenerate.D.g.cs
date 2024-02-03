@@ -9,50 +9,42 @@ using System.Numerics;
 #endif
 namespace FileGenerate
 {
-    [System.ComponentModel.TypeConverter(typeof(CcTypeConverter))]
-    readonly partial struct Cc 
-        : IEquatable<Cc>
-        , IComparable<Cc>
+    [System.ComponentModel.TypeConverter(typeof(DTypeConverter))]
+    readonly partial struct D 
+        : IEquatable<D>
+        , IComparable<D>
         , IFormattable
 #if NET6_0_OR_GREATER
         , ISpanFormattable
 #endif
 #if NET7_0_OR_GREATER
-        , IComparisonOperators<Cc, Cc, bool>
-        , IAdditionOperators<Cc, Cc, Cc>
-        , ISubtractionOperators<Cc, Cc, Cc>
-        , IMultiplyOperators<Cc, Cc, Cc>
-        , IDivisionOperators<Cc, Cc, Cc>
-        , IUnaryPlusOperators<Cc, Cc>
-        , IUnaryNegationOperators<Cc, Cc>
-        , IIncrementOperators<Cc>
-        , IDecrementOperators<Cc>
+        , IComparisonOperators<D, D, bool>
 #endif
 #if NET8_0_OR_GREATER
-        , IEqualityOperators<Cc, Cc, bool>
+        , IEqualityOperators<D, D, bool>
         , IUtf8SpanFormattable
 #endif
     {
-        readonly int value;
+        readonly System.Guid value;
 
-        public int AsPrimitive() => value;
+        public System.Guid AsPrimitive() => value;
 
-        public Cc(int value)
+        public D(System.Guid value)
         {
             this.value = value;
         }
         
-        public static explicit operator int(Cc value)
+        public static explicit operator System.Guid(D value)
         {
             return value.value;
         }
 
-        public static explicit operator Cc(int value)
+        public static explicit operator D(System.Guid value)
         {
-            return new Cc(value);
+            return new D(value);
         }
 
-        public bool Equals(Cc other)
+        public bool Equals(D other)
         {
             return value.Equals(other.value);
         }
@@ -61,24 +53,24 @@ namespace FileGenerate
         {
             if (obj == null) return false;
             var t = obj.GetType();
-            if (t == typeof(Cc))
+            if (t == typeof(D))
             {
-                return Equals((Cc)obj);
+                return Equals((D)obj);
             }
-            if (t == typeof(int))
+            if (t == typeof(System.Guid))
             {
-                return value.Equals((int)obj);
+                return value.Equals((System.Guid)obj);
             }
 
             return value.Equals(obj);
         }
         
-        public static bool operator ==(Cc x, Cc y)
+        public static bool operator ==(D x, D y)
         {
             return x.value.Equals(y.value);
         }
 
-        public static bool operator !=(Cc x, Cc y)
+        public static bool operator !=(D x, D y)
         {
             return !x.value.Equals(y.value);
         }
@@ -101,127 +93,71 @@ namespace FileGenerate
             ((IUtf8SpanFormattable)value).TryFormat(utf8Destination, out bytesWritten, format, provider);
 #endif
 
-        // UnitGenerateOptions.ArithmeticOperator
+        public static readonly D Empty = default(D);
+
+        public static D New()
+        {
+            return new D(Guid.NewGuid());
+        }
+
+        public static D NewD()
+        {
+            return new D(Guid.NewGuid());
+        }
+
+        // UnitGenerateOptions.ParseMethod
         
-        public static Cc operator +(Cc x, Cc y)
+        public static D Parse(string s)
         {
-            checked
-            {
-                return new Cc((int)(x.value + y.value));
-            }
+            return new D(System.Guid.Parse(s));
         }
-
-        public static Cc operator -(Cc x, Cc y)
+ 
+        public static bool TryParse(string s, out D result)
         {
-            checked
+            if (System.Guid.TryParse(s, out var r))
             {
-                return new Cc((int)(x.value - y.value));
+                result = new D(r);
+                return true;
             }
-        }
-
-        public static Cc operator +(Cc value) => new((int)(+value.value));
-        public static Cc operator -(Cc value) => new((int)(-value.value));
-
-        public static Cc operator *(Cc x, Cc y)
-        {
-            checked
+            else
             {
-                return new Cc((int)(x.value * y.value));
-            }
-        }
-
-
-        public static Cc operator /(Cc x, Cc y)
-        {
-            checked
-            {
-                return new Cc((int)(x.value / y.value));
-            }
-        }
-
-        public static Cc operator ++(Cc x)
-        {
-            checked
-            {
-                return new Cc((int)((int)(x.value + 1)));
-            }
-        }
-
-        public static Cc operator --(Cc x)
-        {
-            checked
-            {
-                return new Cc((int)((int)(x.value - 1)));
-            }
-        }
-
-        // UnitGenerateOptions.ValueArithmeticOperator
-        
-        public static Cc operator +(Cc x, int y)
-        {
-            checked
-            {
-                return new Cc((int)(x.value + y));
-            }
-        }
-
-        public static Cc operator -(Cc x, int y)
-        {
-            checked
-            {
-                return new Cc((int)(x.value - y));
-            }
-        }
-
-        public static Cc operator *(Cc x, int y)
-        {
-            checked
-            {
-                return new Cc((int)(x.value * y));
-            }
-        }
-
-
-        public static Cc operator /(Cc x, int y)
-        {
-            checked
-            {
-                return new Cc((int)(x.value / y));
+                result = default(D);
+                return false;
             }
         }
 
         // UnitGenerateOptions.Comparable
 
-        public int CompareTo(Cc other)
+        public int CompareTo(D other)
         {
             return value.CompareTo(other.value);
         }
-        public static bool operator >(Cc x, Cc y)
+        public static bool operator >(D x, D y)
         {
             return x.value > y.value;
         }
 
-        public static bool operator <(Cc x, Cc y)
+        public static bool operator <(D x, D y)
         {
             return x.value < y.value;
         }
 
-        public static bool operator >=(Cc x, Cc y)
+        public static bool operator >=(D x, D y)
         {
             return x.value >= y.value;
         }
 
-        public static bool operator <=(Cc x, Cc y)
+        public static bool operator <=(D x, D y)
         {
             return x.value <= y.value;
         }
 
         // Default
         
-        private class CcTypeConverter : System.ComponentModel.TypeConverter
+        private class DTypeConverter : System.ComponentModel.TypeConverter
         {
-            private static readonly Type WrapperType = typeof(Cc);
-            private static readonly Type ValueType = typeof(int);
+            private static readonly Type WrapperType = typeof(D);
+            private static readonly Type ValueType = typeof(System.Guid);
 
             public override bool CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, Type sourceType)
             {
@@ -248,13 +184,13 @@ namespace FileGenerate
                 if (value != null)
                 {
                     var t = value.GetType();
-                    if (t == typeof(Cc))
+                    if (t == typeof(D))
                     {
-                        return (Cc)value;
+                        return (D)value;
                     }
-                    if (t == typeof(int))
+                    if (t == typeof(System.Guid))
                     {
-                        return new Cc((int)value);
+                        return new D((System.Guid)value);
                     }
                 }
 
@@ -263,7 +199,7 @@ namespace FileGenerate
 
             public override object ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
             {
-                if (value is Cc wrappedValue)
+                if (value is D wrappedValue)
                 {
                     if (destinationType == WrapperType)
                     {

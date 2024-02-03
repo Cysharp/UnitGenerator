@@ -37,8 +37,8 @@ namespace UnitGenerator
         {
             this.Type = typeof(T);
             this.Options = options;
-        }
-    }
+        }
+    }
 #endif
 
     [Flags]

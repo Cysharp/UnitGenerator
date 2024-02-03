@@ -1,4 +1,5 @@
-﻿using UnitGenerator;
+﻿using System;
+using UnitGenerator;
 
 namespace FileGenerate
 {
@@ -11,12 +12,16 @@ namespace FileGenerate
     public readonly partial struct B
     {
     }
-    
+
     [UnitOf(typeof(int), UnitGenerateOptions.Comparable | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.ParseMethod)]
     public readonly partial struct C
     {
     }
 
+    [UnitOf(typeof(Guid), UnitGenerateOptions.Comparable | UnitGenerateOptions.ParseMethod)]
+    public readonly partial struct D
+    {
+    }
 
     [UnitOf<int>]
     public readonly partial struct Aa

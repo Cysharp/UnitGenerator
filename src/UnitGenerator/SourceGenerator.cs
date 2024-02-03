@@ -49,7 +49,7 @@ namespace UnitGenerator
                     {
                         var arg = attr.ArgumentList!.Arguments[i];
                         var expr = arg.Expression;
-                        
+
                         var argName = arg.NameEquals?.Name.ToString();
                         switch (argName)
                         {
@@ -104,7 +104,7 @@ namespace UnitGenerator
                     if (typeSymbol == null) throw new Exception("can not get typeSymbol.");
 
                     var source = GenerateType(typeSymbol, prop);
-                    
+
                     var ns = typeSymbol.ContainingNamespace.IsGlobalNamespace
                         ? null
                         : typeSymbol.ContainingNamespace.ToDisplayString();
@@ -112,7 +112,7 @@ namespace UnitGenerator
                     var filename = ns == null
                         ? $"{typeSymbol.Name}.g.cs"
                         : $"{ns}.{typeSymbol.Name}.g.cs";
-                    
+
                     context.AddSource(filename, source);
                 }
             }
@@ -164,8 +164,8 @@ namespace UnitGenerator
         {
             this.Type = typeof(T);
             this.Options = options;
-        }
-    }
+        }
+    }
 #endif
 
     [Flags]
@@ -311,7 +311,7 @@ namespace {{ns}}
                     net8Interfaces.Add($"IUtf8SpanParsable<{unitTypeName}>");
                 }
             }
-            
+
             if (prop.HasFlag(UnitGenerateOptions.ArithmeticOperator))
             {
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Addition))
@@ -362,7 +362,7 @@ namespace {{ns}}
             {
                 sb.AppendLine("#endif");
             }
-            
+
             if (net7Interfaces.Count > 0)
             {
                 sb.AppendLine("#if NET7_0_OR_GREATER");
@@ -375,7 +375,7 @@ namespace {{ns}}
             {
                 sb.AppendLine("#endif");
             }
-            
+
             if (net8Interfaces.Count > 0)
             {
                 sb.AppendLine("#if NET8_0_OR_GREATER");
@@ -419,11 +419,11 @@ namespace {{ns}}
             {
                 sb.AppendLine($$"""
         private partial void Normalize(ref {{innerTypeName}} value);
-        
+
 """);
-                
+
             }
-            
+
             if (prop.HasFlag(UnitGenerateOptions.Validate))
             {
                 sb.AppendLine("""
@@ -714,7 +714,7 @@ namespace {{ns}}
 """);
                 }
             }
-            
+
             if (prop.HasFlag(UnitGenerateOptions.MinMaxMethod))
             {
                 sb.AppendLine($$"""
@@ -1299,13 +1299,28 @@ namespace {{ns}}
                     _ => false
                 };
             }
-            
+
             bool IsImplemented(INamedTypeSymbol interfaceSymbol)
             {
                 foreach (var x in Type.AllInterfaces)
                 {
                     if (SymbolEqualityComparer.Default.Equals(x, interfaceSymbol))
                     {
+                        foreach (var interfaceMember in x.GetMembers())
+                        {
+                            if (interfaceMember.IsStatic)
+                            {
+                                // Do not allow explicit implementation
+                                var implementation = Type.FindImplementationForInterfaceMember(interfaceMember);
+                                switch (implementation)
+                                {
+                                    case IMethodSymbol { ExplicitInterfaceImplementations.Length: > 0 }:
+                                        return false;
+                                    case IPropertySymbol { ExplicitInterfaceImplementations.Length: > 0 }:
+                                        return false;
+                                }
+                            }
+                        }
                         return true;
                     }
                 }
@@ -1320,6 +1335,21 @@ namespace {{ns}}
                         SymbolEqualityComparer.Default.Equals(x.ConstructedFrom, interfaceSymbol) &&
                         SymbolEqualityComparer.Default.Equals(x.TypeArguments[0], Type))
                     {
+                        foreach (var interfaceMember in x.GetMembers())
+                        {
+                            if (interfaceMember.IsStatic)
+                            {
+                                // Do not allow explicit implementation
+                                var implementation = Type.FindImplementationForInterfaceMember(interfaceMember);
+                                switch (implementation)
+                                {
+                                    case IMethodSymbol { ExplicitInterfaceImplementations.Length: > 0 }:
+                                        return false;
+                                    case IPropertySymbol { ExplicitInterfaceImplementations.Length: > 0 }:
+                                        return false;
+                                }
+                            }
+                        }
                         return true;
                     }
                 }

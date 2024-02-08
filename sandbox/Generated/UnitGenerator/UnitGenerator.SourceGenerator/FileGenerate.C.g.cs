@@ -19,6 +19,8 @@ namespace FileGenerate
 #endif
 #if NET7_0_OR_GREATER
         , IComparisonOperators<C, C, bool>
+        , IParsable<C>
+        , ISpanParsable<C>
         , IAdditionOperators<C, C, C>
         , ISubtractionOperators<C, C, C>
         , IMultiplyOperators<C, C, C>
@@ -31,8 +33,30 @@ namespace FileGenerate
 #if NET8_0_OR_GREATER
         , IEqualityOperators<C, C, bool>
         , IUtf8SpanFormattable
+        , IUtf8SpanParsable<C>
 #endif
     {
+        class AsParsable<T> : IParsable<int> where T : IParsable<int>
+        {
+            public static int Parse (string s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse (string? s, IFormatProvider? provider, out int result) => T.TryParse(s, provider, out result);
+        }
+
+        class AsSpanParsable<T> : ISpanParsable<int> where T : ISpanParsable<int>
+        {
+            public static int Parse (string s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse (string? s, IFormatProvider? provider, out int result) => T.TryParse(s, provider, out result);
+        
+            public static int Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out int result) => T.TryParse(s, provider, out result);
+        }
+
+        class AsUtf8SpanParsable<T> : IUtf8SpanParsable<int> where T : IUtf8SpanParsable<int>
+        {
+            public static int Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider) => T.Parse(utf8Text, provider);
+            public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, out int result) => T.TryParse(utf8Text, provider, out result);
+        }
+
         readonly int value;
 
         public int AsPrimitive() => value;
@@ -94,11 +118,11 @@ namespace FileGenerate
 
 #if NET6_0_OR_GREATER
         public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => 
-            ((ISpanFormattable)value).TryFormat(destination, out charsWritten, format, provider);
+            value.TryFormat(destination, out charsWritten, format, provider);
 #endif
 #if NET8_0_OR_GREATER        
         public bool TryFormat (Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider) =>
-            ((IUtf8SpanFormattable)value).TryFormat(utf8Destination, out bytesWritten, format, provider);
+            value.TryFormat(utf8Destination, out bytesWritten, format, provider);
 #endif
 
         // UnitGenerateOptions.ParseMethod
@@ -121,6 +145,69 @@ namespace FileGenerate
                 return false;
             }
         }
+
+#if NET7_0_OR_GREATER
+        public static C Parse(string s, IFormatProvider? provider)
+        {
+            return new C(AsParsable<int>.Parse(s, provider));
+        }
+ 
+        public static bool TryParse(string s, IFormatProvider? provider, out C result)
+        {
+            if (AsParsable<int>.TryParse(s, provider, out var r))
+            {
+                result = new C(r);
+                return true;
+            }
+            else
+            {
+                result = default(C);
+                return false;
+            }
+        }
+#endif
+
+#if NET7_0_OR_GREATER
+        public static C Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+        {
+            return new C(AsSpanParsable<int>.Parse(s, provider));
+        }
+ 
+        public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out C result)
+        {
+            if (AsSpanParsable<int>.TryParse(s, provider, out var r))
+            {
+                result = new C(r);
+                return true;
+            }
+            else
+            {
+                result = default(C);
+                return false;
+            }
+        }
+#endif
+
+#if NET8_0_OR_GREATER
+        public static C Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
+        {
+            return new C(AsUtf8SpanParsable<int>.Parse(utf8Text, provider));
+        }
+ 
+        public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, out C result)
+        {
+            if (AsUtf8SpanParsable<int>.TryParse(utf8Text, provider, out var r))
+            {
+                result = new C(r);
+                return true;
+            }
+            else
+            {
+                result = default(C);
+                return false;
+            }
+        }
+#endif
 
         // UnitGenerateOptions.ArithmeticOperator
         

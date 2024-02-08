@@ -117,6 +117,7 @@ src/MasterMemory.UnityClient/Temp/*
 # OTHER
 nuget/tools/*
 *.nupkg
+.idea
 
 .vs
 

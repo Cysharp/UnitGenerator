@@ -103,7 +103,7 @@ namespace UnitGenerator
                     var typeSymbol = context.Compilation.GetSemanticModel(type.SyntaxTree).GetDeclaredSymbol(type);
                     if (typeSymbol == null) throw new Exception("can not get typeSymbol.");
 
-                    var source = GenerateType(typeSymbol, prop);
+                    var source = GenerateType(typeSymbol, prop, symbols);
 
                     var ns = typeSymbol.ContainingNamespace.IsGlobalNamespace
                         ? null
@@ -205,7 +205,7 @@ namespace UnitGenerator
             context.AddSource("UnitOfAttribute.cs", attrCode);
         }
 
-        private string GenerateType(INamedTypeSymbol symbol, UnitOfAttributeProperty prop)
+        private string GenerateType(INamedTypeSymbol symbol, UnitOfAttributeProperty prop, ReferenceSymbols referenceSymbols)
         {
             var unitTypeName = symbol.Name;
             var innerTypeName = prop.TypeName;
@@ -276,6 +276,13 @@ namespace {{ns}}
     readonly partial struct {{unitTypeName}} 
         : IEquatable<{{unitTypeName}}>
 """);
+            var formattableImplementation = prop.CheckForImplementation(referenceSymbols.FormattableInterface);
+            var spanFormattableImplementation = prop.CheckForImplementation(referenceSymbols.SpanFormattableInterface);
+            var utf8SpanFormattableImplementation = prop.CheckForImplementation(referenceSymbols.Utf8SpanFormattableInterface);
+            var parsableImplementation = prop.CheckForImplementationGenericSelfType(referenceSymbols.ParsableInterface);
+            var spanParsableImplementation = prop.CheckForImplementationGenericSelfType(referenceSymbols.SpanParsableInterface);
+            var utf8SpanParsableImplementation = prop.CheckForImplementationGenericSelfType(referenceSymbols.Utf8SpanParsableInterface);
+            
             if (prop.HasFlag(UnitGenerateOptions.Comparable))
             {
                 anyPlatformInterfaces.Add($"IComparable<{unitTypeName}>");
@@ -284,29 +291,29 @@ namespace {{ns}}
                     net7Interfaces.Add($"IComparisonOperators<{unitTypeName}, {unitTypeName}, bool>");
                 }
             }
-            if (prop.HasFormattableInterface())
+            if (formattableImplementation != InterfaceImplementation.None)
             {
                 anyPlatformInterfaces.Add("IFormattable");
             }
-            if (prop.HasSpanFormattableInterface())
+            if (spanFormattableImplementation != InterfaceImplementation.None)
             {
                 net6Interfaces.Add($"ISpanFormattable");
             }
-            if (prop.HasUtf8SpanFormattableInterface())
+            if (utf8SpanFormattableImplementation != InterfaceImplementation.None)
             {
                 net8Interfaces.Add($"IUtf8SpanFormattable");
             }
             if (prop.HasFlag(UnitGenerateOptions.ParseMethod))
             {
-                if (prop.HasParsableInterface())
+                if (parsableImplementation != InterfaceImplementation.None)
                 {
                     net7Interfaces.Add($"IParsable<{unitTypeName}>");
                 }
-                if (prop.HasSpanParsableInterface())
+                if (spanParsableImplementation != InterfaceImplementation.None)
                 {
                     net7Interfaces.Add($"ISpanParsable<{unitTypeName}>");
                 }
-                if (prop.HasUtf8SpanParsableInterface())
+                if (utf8SpanParsableImplementation != InterfaceImplementation.None)
                 {
                     net8Interfaces.Add($"IUtf8SpanParsable<{unitTypeName}>");
                 }
@@ -389,8 +396,47 @@ namespace {{ns}}
                 sb.AppendLine("#endif");
             }
 
-            sb.AppendLine($$"""
+            sb.AppendLine("""
     {
+""");
+            if (parsableImplementation == InterfaceImplementation.Explicit)
+            {
+                sb.AppendLine($$"""
+        class AsParsable<T> : IParsable<{{innerTypeName}}> where T : IParsable<{{innerTypeName}}>
+        {
+            public static {{innerTypeName}} Parse (string s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse (string? s, IFormatProvider? provider, out {{innerTypeName}} result) => T.TryParse(s, provider, out result);
+        }
+
+""");
+            }
+            if (spanParsableImplementation == InterfaceImplementation.Explicit)
+            {
+                sb.AppendLine($$"""
+        class AsSpanParsable<T> : ISpanParsable<{{innerTypeName}}> where T : ISpanParsable<{{innerTypeName}}>
+        {
+            public static {{innerTypeName}} Parse (string s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse (string? s, IFormatProvider? provider, out {{innerTypeName}} result) => T.TryParse(s, provider, out result);
+        
+            public static {{innerTypeName}} Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out {{innerTypeName}} result) => T.TryParse(s, provider, out result);
+        }
+
+""");
+            }
+            if (utf8SpanParsableImplementation == InterfaceImplementation.Explicit)
+            {
+                sb.AppendLine($$"""
+        class AsUtf8SpanParsable<T> : IUtf8SpanParsable<{{innerTypeName}}> where T : IUtf8SpanParsable<{{innerTypeName}}>
+        {
+            public static {{innerTypeName}} Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider) => T.Parse(utf8Text, provider);
+            public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, out {{innerTypeName}} result) => T.TryParse(utf8Text, provider, out result);
+        }
+
+""");
+            }
+
+            sb.AppendLine($$"""
         readonly {{innerTypeName}} value;
 
         public {{innerTypeName}} AsPrimitive() => value;
@@ -516,28 +562,31 @@ namespace {{ns}}
                 }
             }
 
-            if (prop.HasFormattableInterface())
+            if (formattableImplementation != InterfaceImplementation.None)
             {
-                    sb.AppendLine("""
-        public string ToString(string? format, IFormatProvider? formatProvider) => value.ToString(format, formatProvider);
+                var receiver = formattableImplementation == InterfaceImplementation.Explicit ? "((IFormattable)value)" : "value";
+                sb.AppendLine($$"""
+        public string ToString(string? format, IFormatProvider? formatProvider) => {{receiver}}.ToString(format, formatProvider);
 
 """);
             }
-            if (prop.HasSpanFormattableInterface())
+            if (spanFormattableImplementation != InterfaceImplementation.None)
             {
-                    sb.AppendLine("""
+                var receiver = spanFormattableImplementation == InterfaceImplementation.Explicit ? "((ISpanFormattable)value)" : "value";
+                sb.AppendLine($$"""
 #if NET6_0_OR_GREATER
         public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider) => 
-            ((ISpanFormattable)value).TryFormat(destination, out charsWritten, format, provider);
+            {{receiver}}.TryFormat(destination, out charsWritten, format, provider);
 #endif
 """);
             }
-            if (prop.HasUtf8SpanFormattableInterface())
+            if (utf8SpanFormattableImplementation != InterfaceImplementation.None)
             {
-                    sb.AppendLine("""
+                var receiver = utf8SpanFormattableImplementation == InterfaceImplementation.Explicit ? "((IUtf8SpanFormattable)value)" : "value";
+                sb.AppendLine($$"""
 #if NET8_0_OR_GREATER        
         public bool TryFormat (Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider) =>
-            ((IUtf8SpanFormattable)value).TryFormat(utf8Destination, out bytesWritten, format, provider);
+            {{receiver}}.TryFormat(utf8Destination, out bytesWritten, format, provider);
 #endif
 
 """);
@@ -634,18 +683,19 @@ namespace {{ns}}
 """);
                 }
 
-                if (prop.HasParsableInterface())
+                if (parsableImplementation != InterfaceImplementation.None)
                 {
+                    var receiver = parsableImplementation == InterfaceImplementation.Explicit ? $"AsParsable<{innerTypeName}>" : innerTypeName;
                     sb.AppendLine($$"""
 #if NET7_0_OR_GREATER
         public static {{unitTypeName}} Parse(string s, IFormatProvider? provider)
         {
-            return new {{unitTypeName}}({{innerTypeName}}.Parse(s, provider));
+            return new {{unitTypeName}}({{receiver}}.Parse(s, provider));
         }
  
         public static bool TryParse(string s, IFormatProvider? provider, out {{unitTypeName}} result)
         {
-            if ({{innerTypeName}}.TryParse(s, provider, out var r))
+            if ({{receiver}}.TryParse(s, provider, out var r))
             {
                 result = new {{unitTypeName}}(r);
                 return true;
@@ -660,18 +710,19 @@ namespace {{ns}}
 
 """);
                 }
-                if (prop.HasSpanParsableInterface())
+                if (spanParsableImplementation != InterfaceImplementation.None)
                 {
+                    var receiver = spanParsableImplementation == InterfaceImplementation.Explicit ? $"AsSpanParsable<{innerTypeName}>" : innerTypeName;
                     sb.AppendLine($$"""
 #if NET7_0_OR_GREATER
         public static {{unitTypeName}} Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
         {
-            return new {{unitTypeName}}({{innerTypeName}}.Parse(s, provider));
+            return new {{unitTypeName}}({{receiver}}.Parse(s, provider));
         }
  
         public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out {{unitTypeName}} result)
         {
-            if ({{innerTypeName}}.TryParse(s, provider, out var r))
+            if ({{receiver}}.TryParse(s, provider, out var r))
             {
                 result = new {{unitTypeName}}(r);
                 return true;
@@ -687,18 +738,19 @@ namespace {{ns}}
 """);
                 }
 
-                if (prop.HasUtf8SpanParsableInterface())
+                if (utf8SpanParsableImplementation != InterfaceImplementation.None)
                 {
+                    var receiver = utf8SpanParsableImplementation == InterfaceImplementation.Explicit ? $"AsUtf8SpanParsable<{innerTypeName}>" : innerTypeName;
                     sb.AppendLine($$"""
 #if NET8_0_OR_GREATER
         public static {{unitTypeName}} Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
         {
-            return new {{unitTypeName}}({{innerTypeName}}.Parse(utf8Text, provider));
+            return new {{unitTypeName}}({{receiver}}.Parse(utf8Text, provider));
         }
  
         public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, out {{unitTypeName}} result)
         {
-            if ({{innerTypeName}}.TryParse(utf8Text, provider, out var r))
+            if ({{receiver}}.TryParse(utf8Text, provider, out var r))
             {
                 result = new {{unitTypeName}}(r);
                 return true;
@@ -1218,6 +1270,13 @@ namespace {{ns}}
             return sb.ToString();
         }
 
+        enum InterfaceImplementation
+        {
+            None,
+            Implicit,
+            Explicit
+        }
+
         struct UnitOfAttributeProperty
         {
             public ReferenceSymbols ReferenceSymbols { get; set; }
@@ -1226,6 +1285,7 @@ namespace {{ns}}
             public UnitArithmeticOperators ArithmeticOperators { get; set; }
             public string? ToStringFormat { get; set; }
             public string TypeName => Type.ToString();
+            public string FlatTypeName => TypeName.Replace(".", "");
 
             public bool IsString() => TypeName is "string";
             public bool IsBool() => TypeName is "bool";
@@ -1243,13 +1303,6 @@ namespace {{ns}}
             {
                 return HasFlag(UnitGenerateOptions.ValueArithmeticOperator) && ArithmeticOperators.HasFlag(op);
             }
-
-            public bool HasFormattableInterface() => IsImplemented(ReferenceSymbols.FormattableInterface);
-            public bool HasParsableInterface() => ReferenceSymbols.ParsableInterface != null && IsImplementedGenericSelfType(ReferenceSymbols.ParsableInterface);
-            public bool HasSpanFormattableInterface() => ReferenceSymbols.SpanFormattableInterface != null && IsImplemented(ReferenceSymbols.SpanFormattableInterface);
-            public bool HasSpanParsableInterface() => ReferenceSymbols.SpanParsableInterface != null && IsImplementedGenericSelfType(ReferenceSymbols.SpanParsableInterface);
-            public bool HasUtf8SpanFormattableInterface() => ReferenceSymbols.Utf8SpanFormattableInterface != null && IsImplemented(ReferenceSymbols.Utf8SpanFormattableInterface);
-            public bool HasUtf8SpanParsableInterface() => ReferenceSymbols.ParsableInterface != null && IsImplementedGenericSelfType(ReferenceSymbols.ParsableInterface);
 
             public DbType GetDbType()
             {
@@ -1300,35 +1353,41 @@ namespace {{ns}}
                 };
             }
 
-            bool IsImplemented(INamedTypeSymbol interfaceSymbol)
+            public InterfaceImplementation CheckForImplementation(INamedTypeSymbol? interfaceSymbol)
             {
+                if (interfaceSymbol == null)
+                {
+                    return InterfaceImplementation.None;
+                }
+
                 foreach (var x in Type.AllInterfaces)
                 {
                     if (SymbolEqualityComparer.Default.Equals(x, interfaceSymbol))
                     {
                         foreach (var interfaceMember in x.GetMembers())
                         {
-                            if (interfaceMember.IsStatic)
+                            // Do not allow explicit implementation
+                            var implementation = Type.FindImplementationForInterfaceMember(interfaceMember);
+                            switch (implementation)
                             {
-                                // Do not allow explicit implementation
-                                var implementation = Type.FindImplementationForInterfaceMember(interfaceMember);
-                                switch (implementation)
-                                {
-                                    case IMethodSymbol { ExplicitInterfaceImplementations.Length: > 0 }:
-                                        return false;
-                                    case IPropertySymbol { ExplicitInterfaceImplementations.Length: > 0 }:
-                                        return false;
-                                }
+                                case IMethodSymbol { ExplicitInterfaceImplementations.Length: > 0 }:
+                                case IPropertySymbol { ExplicitInterfaceImplementations.Length: > 0 }:
+                                    return InterfaceImplementation.Explicit;
                             }
                         }
-                        return true;
+                        return InterfaceImplementation.Implicit;
                     }
                 }
-                return false;
+                return InterfaceImplementation.None;
             }
 
-            bool IsImplementedGenericSelfType(INamedTypeSymbol interfaceSymbol)
+            public InterfaceImplementation CheckForImplementationGenericSelfType(INamedTypeSymbol? interfaceSymbol)
             {
+                if (interfaceSymbol == null)
+                {
+                    return InterfaceImplementation.None;
+                }
+
                 foreach (var x in Type.AllInterfaces)
                 {
                     if (x.IsGenericType &&
@@ -1337,23 +1396,19 @@ namespace {{ns}}
                     {
                         foreach (var interfaceMember in x.GetMembers())
                         {
-                            if (interfaceMember.IsStatic)
+                            // Do not allow explicit implementation
+                            var implementation = Type.FindImplementationForInterfaceMember(interfaceMember);
+                            switch (implementation)
                             {
-                                // Do not allow explicit implementation
-                                var implementation = Type.FindImplementationForInterfaceMember(interfaceMember);
-                                switch (implementation)
-                                {
-                                    case IMethodSymbol { ExplicitInterfaceImplementations.Length: > 0 }:
-                                        return false;
-                                    case IPropertySymbol { ExplicitInterfaceImplementations.Length: > 0 }:
-                                        return false;
-                                }
+                                case IMethodSymbol { ExplicitInterfaceImplementations.Length: > 0 }:
+                                case IPropertySymbol { ExplicitInterfaceImplementations.Length: > 0 }:
+                                    return InterfaceImplementation.Explicit;
                             }
                         }
-                        return true;
+                        return InterfaceImplementation.Implicit;
                     }
                 }
-                return false;
+                return InterfaceImplementation.None;
             }
         }
 

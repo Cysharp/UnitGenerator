@@ -19,12 +19,29 @@ namespace FileGenerate
 #endif
 #if NET7_0_OR_GREATER
         , IComparisonOperators<D, D, bool>
+        , IParsable<D>
+        , ISpanParsable<D>
 #endif
 #if NET8_0_OR_GREATER
         , IEqualityOperators<D, D, bool>
         , IUtf8SpanFormattable
 #endif
     {
+        class AsParsable<T> : IParsable<System.Guid> where T : IParsable<System.Guid>
+        {
+            public static System.Guid Parse (string s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse (string? s, IFormatProvider? provider, out System.Guid result) => T.TryParse(s, provider, out result);
+        }
+
+        class AsSpanParsable<T> : ISpanParsable<System.Guid> where T : ISpanParsable<System.Guid>
+        {
+            public static System.Guid Parse (string s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse (string? s, IFormatProvider? provider, out System.Guid result) => T.TryParse(s, provider, out result);
+        
+            public static System.Guid Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out System.Guid result) => T.TryParse(s, provider, out result);
+        }
+
         readonly System.Guid value;
 
         public System.Guid AsPrimitive() => value;
@@ -125,6 +142,48 @@ namespace FileGenerate
                 return false;
             }
         }
+
+#if NET7_0_OR_GREATER
+        public static D Parse(string s, IFormatProvider? provider)
+        {
+            return new D(AsParsable<System.Guid>.Parse(s, provider));
+        }
+ 
+        public static bool TryParse(string s, IFormatProvider? provider, out D result)
+        {
+            if (AsParsable<System.Guid>.TryParse(s, provider, out var r))
+            {
+                result = new D(r);
+                return true;
+            }
+            else
+            {
+                result = default(D);
+                return false;
+            }
+        }
+#endif
+
+#if NET7_0_OR_GREATER
+        public static D Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+        {
+            return new D(AsSpanParsable<System.Guid>.Parse(s, provider));
+        }
+ 
+        public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out D result)
+        {
+            if (AsSpanParsable<System.Guid>.TryParse(s, provider, out var r))
+            {
+                result = new D(r);
+                return true;
+            }
+            else
+            {
+                result = default(D);
+                return false;
+            }
+        }
+#endif
 
         // UnitGenerateOptions.Comparable
 

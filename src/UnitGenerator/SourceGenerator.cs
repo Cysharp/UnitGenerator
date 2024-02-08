@@ -432,7 +432,7 @@ namespace {{ns}}
 
             var convertModifier = prop.HasFlag(UnitGenerateOptions.ImplicitOperator) ? "implicit"  : "explicit";
             sb.AppendLine($$"""
-        public static {{convertModifier}} operator {{innerTypeName}}({{unitTypeName}} value)
+        public static implicit operator {{innerTypeName}}({{unitTypeName}} value)
         {
             return value.value;
         }

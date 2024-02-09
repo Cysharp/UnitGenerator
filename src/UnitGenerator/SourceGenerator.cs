@@ -276,11 +276,13 @@ namespace {{ns}}
     readonly partial struct {{unitTypeName}} 
         : IEquatable<{{unitTypeName}}>
 """);
-            if (prop.HasFlag(UnitGenerateOptions.Comparable) &&
-                !prop.HasFlag(UnitGenerateOptions.WithoutComparisonOperator))
+            if (prop.HasFlag(UnitGenerateOptions.Comparable))
             {
                 anyPlatformInterfaces.Add($"IComparable<{unitTypeName}>");
-                net7Interfaces.Add($"IComparisonOperators<{unitTypeName}, {unitTypeName}, bool>");
+                if (!prop.HasFlag(UnitGenerateOptions.WithoutComparisonOperator))
+                {
+                    net7Interfaces.Add($"IComparisonOperators<{unitTypeName}, {unitTypeName}, bool>");
+                }
             }
             if (prop.HasFormattableInterface())
             {

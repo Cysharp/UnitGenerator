@@ -30,6 +30,7 @@ jobs:
         with:
           name: UnitGenerator
           path: ./src/UnitGenerator/bin/Release/netstandard2.0/UnitGenerator.dll
+          retention-days: 1
 
   # release
   create-release:

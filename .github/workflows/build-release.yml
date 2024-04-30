@@ -22,14 +22,15 @@ jobs:
       # pack nuget
       - run: dotnet build -c Release -p:Version=${{ inputs.tag }}
       - run: dotnet pack -c Release --no-build -p:Version=${{ inputs.tag }} -o ./publish
-      - uses: actions/upload-artifact@v2
+      - uses: Cysharp/Actions/.github/actions/upload-artifact@main
         with:
           name: nuget
           path: ./publish
-      - uses: actions/upload-artifact@v2
+      - uses: Cysharp/Actions/.github/actions/upload-artifact@main
         with:
           name: UnitGenerator
           path: ./src/UnitGenerator/bin/Release/netstandard2.0/UnitGenerator.dll
+          retention-days: 1
 
   # release
   create-release:

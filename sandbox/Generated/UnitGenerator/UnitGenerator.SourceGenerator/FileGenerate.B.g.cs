@@ -16,6 +16,21 @@ namespace FileGenerate
         , IEqualityOperators<B, B, bool>
 #endif
     {
+        class AsParsable<T> : IParsable<string> where T : IParsable<string>
+        {
+            public static string Parse (string s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse (string? s, IFormatProvider? provider, out string result) => T.TryParse(s, provider, out result);
+        }
+
+        class AsSpanParsable<T> : ISpanParsable<string> where T : ISpanParsable<string>
+        {
+            public static string Parse (string s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse (string? s, IFormatProvider? provider, out string result) => T.TryParse(s, provider, out result);
+        
+            public static string Parse(ReadOnlySpan<char> s, IFormatProvider? provider) => T.Parse(s, provider);
+            public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out string result) => T.TryParse(s, provider, out result);
+        }
+
         readonly string value;
 
         public string AsPrimitive() => value;

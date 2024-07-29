@@ -19,7 +19,10 @@ var json = JsonSerializer.Serialize(new Dictionary<Guid, string> { { Guid.NewGui
 
 Console.WriteLine(json);
 
-
+[UnitOf(typeof(ulong), UnitGenerateOptions.ArithmeticOperator)]
+public readonly partial struct Money
+{
+}
 
 
 [UnitOf(typeof(int))]

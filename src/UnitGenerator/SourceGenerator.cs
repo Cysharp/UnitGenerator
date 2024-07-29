@@ -317,10 +317,12 @@ namespace {{ns}}
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Addition))
                 {
                     net7Interfaces.Add($"IAdditionOperators<{unitTypeName}, {unitTypeName}, {unitTypeName}>");
+                    net7Interfaces.Add($"IUnaryPlusOperators<{unitTypeName}, {unitTypeName}>");
                 }
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Subtraction))
                 {
                     net7Interfaces.Add($"ISubtractionOperators<{unitTypeName}, {unitTypeName}, {unitTypeName}>");
+                    net7Interfaces.Add($"IUnaryNegationOperators<{unitTypeName}, {unitTypeName}>");
                 }
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Multiply))
                 {
@@ -329,12 +331,6 @@ namespace {{ns}}
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Division))
                 {
                     net7Interfaces.Add($"IDivisionOperators<{unitTypeName}, {unitTypeName}, {unitTypeName}>");
-                }
-                if (prop.HasArithmeticOperator(UnitArithmeticOperators.Multiply) ||
-                    prop.HasArithmeticOperator(UnitArithmeticOperators.Division))
-                {
-                    net7Interfaces.Add($"IUnaryPlusOperators<{unitTypeName}, {unitTypeName}>");
-                    net7Interfaces.Add($"IUnaryNegationOperators<{unitTypeName}, {unitTypeName}>");
                 }
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Increment))
                 {
@@ -774,6 +770,9 @@ namespace {{ns}}
         }
 
 """);
+                    sb.AppendLine($$"""
+        public static {{unitTypeName}} operator +({{unitTypeName}} value) => new(({{innerTypeName}})(+value.value));
+""");
                 }
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Subtraction))
                 {
@@ -787,16 +786,21 @@ namespace {{ns}}
         }
 
 """);
+                    string zero = "";
+                    if (innerTypeName == "ulong")
+                    {
+                        zero = "0UL ";
+                    }
+
+                    sb.AppendLine($$"""
+        public static {{unitTypeName}} operator -({{unitTypeName}} value) => new(({{innerTypeName}})({{zero}}-value.value));
+
+""");
                 }
 
                 if (prop.HasArithmeticOperator(UnitArithmeticOperators.Multiply) ||
                     prop.HasArithmeticOperator(UnitArithmeticOperators.Division))
                 {
-                    sb.AppendLine($$"""
-        public static {{unitTypeName}} operator +({{unitTypeName}} value) => new(({{innerTypeName}})(+value.value));
-        public static {{unitTypeName}} operator -({{unitTypeName}} value) => new(({{innerTypeName}})(-value.value));
-
-""");
                     if (prop.HasArithmeticOperator(UnitArithmeticOperators.Multiply))
                     {
                        sb.AppendLine($$"""

@@ -243,8 +243,8 @@ namespace UnitGenerator
         {
             this.Type = typeof(T);
             this.Options = options;
-        }
-    }
+        }
+    }
 #endif
 }
 ```
@@ -548,6 +548,21 @@ public readonly partial struct UserId
 
 // setup handler manually
 builder.HasConversion(new UserId.UserIdValueConverter());
+```
+
+### UUIDv7
+
+Implements `New()` method as `Guid.CreateVersion7()`, which was introduced in .NET 9.0. This implementation only takes effect when the Guid type is specified. Even if Guid is specified, a compilation error will occur if the .NET version is below 9.0.
+
+```csharp
+[UnitOf<Guid>(UnitGenerateOptions.UUIDv7)]
+public readonly partial struct Guidv7
+{
+    public static Guidv7 New()
+    {
+        return new Guidv7(Guid.CreateVersion7());
+    }
+}
 ```
 
 ## Use for Unity

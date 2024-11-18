@@ -186,6 +186,7 @@ namespace UnitGenerator
         WithoutComparisonOperator = 1 << 11,
         JsonConverterDictionaryKeySupport = 1 << 12,
         Normalize = 1 << 13,
+        UUIDv7 = 1 << 14,
     }
 
     [Flags]
@@ -546,12 +547,12 @@ namespace {{ns}}
 
         public static {{unitTypeName}} New()
         {
-            return new {{unitTypeName}}(Guid.NewGuid());
+            return new {{unitTypeName}}({{(prop.HasFlag(UnitGenerateOptions.UUIDv7) ? "Guid.CreateVersion7()" : "Guid.NewGuid()")}});
         }
 
         public static {{unitTypeName}} New{{unitTypeName}}()
         {
-            return new {{unitTypeName}}(Guid.NewGuid());
+            return new {{unitTypeName}}({{(prop.HasFlag(UnitGenerateOptions.UUIDv7) ? "Guid.CreateVersion7()" : "Guid.NewGuid()")}});
         }
 
 """);

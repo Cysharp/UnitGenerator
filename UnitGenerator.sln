@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileGenerate", "sandbox\Fil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkApp", "src\EntityFrameworkApp\EntityFrameworkApp.csproj", "{51AE7857-4223-40FE-AEA9-F0E64C5F8238}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitGenerator.NET9.Tests", "tests\UnitGenerator.NET9.Tests\UnitGenerator.NET9.Tests.csproj", "{EAC3A025-E49B-4719-8738-9C3B67484A4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{51AE7857-4223-40FE-AEA9-F0E64C5F8238}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51AE7857-4223-40FE-AEA9-F0E64C5F8238}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51AE7857-4223-40FE-AEA9-F0E64C5F8238}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAC3A025-E49B-4719-8738-9C3B67484A4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAC3A025-E49B-4719-8738-9C3B67484A4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAC3A025-E49B-4719-8738-9C3B67484A4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAC3A025-E49B-4719-8738-9C3B67484A4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -55,6 +61,7 @@ Global
 		{5DA06D43-A023-4464-B856-8BB42E8E4A05} = {187FBF64-D2AA-444D-AFB1-CE999BC6AD34}
 		{F8353A7A-290E-41D7-A6F8-8D8DBDD44433} = {34EB4113-923D-4855-979C-A0467461B75C}
 		{51AE7857-4223-40FE-AEA9-F0E64C5F8238} = {34EB4113-923D-4855-979C-A0467461B75C}
+		{EAC3A025-E49B-4719-8738-9C3B67484A4A} = {187FBF64-D2AA-444D-AFB1-CE999BC6AD34}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A64DF779-7829-414F-9E6E-3AF349486508}

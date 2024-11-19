@@ -555,12 +555,12 @@ namespace {{ns}}
         }
 
 #if NET9_0_OR_GREATER        
-        public static {{unitTypeName}} New(bool uuidV7 = false)
+        public static {{unitTypeName}} New(bool uuidV7)
         {
             return new {{unitTypeName}}(uuidV7 ? Guid.CreateVersion7() : Guid.NewGuid());
         }
 
-        public static {{unitTypeName}} New{{unitTypeName}}(bool uuidV7 = false)
+        public static {{unitTypeName}} New{{unitTypeName}}(bool uuidV7)
         {
             return new {{unitTypeName}}(uuidV7 ? Guid.CreateVersion7() : Guid.NewGuid());
         }

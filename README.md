@@ -289,9 +289,9 @@ public static bool operator !(Foo x) => !x.value;
 ```csharp
 public static GroupId New();
 public static GroupId NewGroupId();
-// .NET 9.0+
-public static GroupId New(bool uuidV7 = false);
-public static GroupId NewGroupId(bool uuidV7 = false);
+// overload .NET 9.0+
+public static GroupId New(bool uuidV7);
+public static GroupId NewGroupId(bool uuidV7);
 ```
 
 Second parameter `UnitGenerateOptions options` can configure which method to implement, default is `None`.

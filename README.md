@@ -243,8 +243,8 @@ namespace UnitGenerator
         {
             this.Type = typeof(T);
             this.Options = options;
-        }
-    }
+        }
+    }
 #endif
 }
 ```
@@ -283,11 +283,15 @@ public static bool operator false(Foo x) => !x.value;
 public static bool operator !(Foo x) => !x.value;
 ```
 
-> When type is Guid or [Ulid](https://github.com/Cysharp/Ulid), also implements `New()` and `New***()` static operator.
+> When type is Guid or [Ulid](https://github.com/Cysharp/Ulid), also implements `New()` and `New***()` static operator.<br />
+> For Guid type in .NET 9.0 or later, these methods accept an optional `uuidV7` parameter. When `uuidV7` is set to `true`, the methods use `Guid.CreateVersion7()` internally.
 
 ```csharp
 public static GroupId New();
 public static GroupId NewGroupId();
+// overload .NET 9.0+
+public static GroupId New(bool uuidV7);
+public static GroupId NewGroupId(bool uuidV7);
 ```
 
 Second parameter `UnitGenerateOptions options` can configure which method to implement, default is `None`.

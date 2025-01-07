@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
@@ -11,6 +12,9 @@ using UnitGenerator;
 
 namespace ConsoleApp
 {
+
+
+
     [UnitOf(typeof(int), UnitGenerateOptions.Normalize | UnitGenerateOptions.ParseMethod | UnitGenerateOptions.MinMaxMethod | UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.Validate | UnitGenerateOptions.JsonConverter | UnitGenerateOptions.MessagePackFormatter | UnitGenerateOptions.DapperTypeHandler | UnitGenerateOptions.EntityFrameworkValueConverter | UnitGenerateOptions.JsonConverterDictionaryKeySupport)]
     public readonly partial struct A
     {
@@ -18,7 +22,7 @@ namespace ConsoleApp
         {
             value = Math.Clamp(value, 0, 100);
         }
-        
+
         private partial void Validate()
         {
             _ = AsPrimitive();

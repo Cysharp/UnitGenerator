@@ -1,7 +1,8 @@
-﻿using Sample;
+﻿//using Sample;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -19,11 +20,39 @@ var json = JsonSerializer.Serialize(new Dictionary<Guid, string> { { Guid.NewGui
 
 Console.WriteLine(json);
 
+
+
+
+
+[UnitOf<int>] public readonly partial struct MyId;
+
+
+public readonly struct MyParsable : IParsable<MyParsable>
+{
+    public static MyParsable Parse(string s)
+        => throw new NotImplementedException();
+
+    public static bool TryParse([NotNullWhen(true)] string? s, [MaybeNullWhen(false)] out MyParsable result)
+        => throw new NotImplementedException();
+
+    public static MyParsable Parse(string s, IFormatProvider? provider)
+        => throw new NotImplementedException();
+
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out MyParsable result)
+        => throw new NotImplementedException();
+}
+
+[UnitOf(typeof(MyParsable), UnitGenerateOptions.ParseMethod)]
+public readonly partial struct StructInOtherLib
+{
+    public static void Test()
+        => StructInOtherLib.Parse("");
+}
+
 [UnitOf(typeof(ulong), UnitGenerateOptions.ArithmeticOperator)]
 public readonly partial struct Money
 {
 }
-
 
 [UnitOf(typeof(int))]
 public readonly partial struct NoNamespace

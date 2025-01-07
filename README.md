@@ -10,6 +10,8 @@ NuGet: [UnitGenerator](https://www.nuget.org/packages/UnitGenerator)
 Install-Package UnitGenerator
 ```
 
+Execute in Unity Game Engine is also supported, please see the [Unity](#use-for-unity) section for details.
+
 ## Introduction
 
 For example, Identifier, UserId is comparable only to UserId, and cannot be assigned to any other type. Also, arithmetic operations are not allowed.
@@ -18,7 +20,7 @@ For example, Identifier, UserId is comparable only to UserId, and cannot be assi
 using UnitGenerator;
 
 [UnitOf(typeof(int))]
-public readonly partial struct UserId { }
+public readonly partial struct UserId; { }
 ```
 
 or when using C#11 and NET7 you can use
@@ -26,8 +28,7 @@ or when using C#11 and NET7 you can use
 ```csharp
 using UnitGenerator;
 
-[UnitOf<int>]
-public readonly partial struct UserId { }
+[UnitOf<int>] public readonly partial struct UserId;
 ```
 
 will generates
@@ -63,8 +64,8 @@ public readonly partial struct UserId : IEquatable<UserId>
 However, Hp in games, should not be allowed to be assigned to other types, but should support arithmetic operations with int. For example double heal = `target.Hp = Hp.Min(target.Hp * 2, target.MaxHp)`.
 
 ```csharp
-[UnitOf(typeof(int), UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.MinMaxMethod)]
-public readonly partial struct Hp { }
+[UnitOf<int>(UnitGenerateOptions.ArithmeticOperator | UnitGenerateOptions.ValueArithmeticOperator | UnitGenerateOptions.Comparable | UnitGenerateOptions.MinMaxMethod)]
+public readonly partial struct Hp;
 
 // -- generates
 
@@ -162,11 +163,11 @@ enum UnitGenerateOptions
 
 UnitGenerateOptions has some serializer support. For example, a result like `Serialize(userId) => { Value = 1111 }` is awful. The value-object should be serialized natively, i.e. `Serialize(useId) => 1111`, and should be able to be added directly to a database, etc.
 
-Currently UnitGenerator supports [MessagePack for C#](https://github.com/neuecc/MessagePack-CSharp), System.Text.Json(JsonSerializer), [Dapper](https://github.com/StackExchange/Dapper) and EntityFrameworkCore.
+Currently UnitGenerator supports [MessagePack for C#](https://github.com/MessagePack-CSharp/MessagePack-CSharp), System.Text.Json(JsonSerializer), [Dapper](https://github.com/StackExchange/Dapper) and EntityFrameworkCore.
 
 ```csharp
-[UnitOf(typeof(int), UnitGenerateOptions.MessagePackFormatter)]
-public readonly partial struct UserId { }
+[UnitOf<int>(UnitGenerateOptions.MessagePackFormatter)]
+public readonly partial struct UserId;
 
 // -- generates
 
@@ -556,41 +557,11 @@ builder.HasConversion(new UserId.UserIdValueConverter());
 
 ## Use for Unity
 
-C# Source Generator feature is rely on C# 9.0. If you are using Unity 2021.2, that supports [Source Generators](https://docs.unity3d.com/2021.2/Documentation/Manual/roslyn-analyzers.html). Add the `UnitGenerator.dll` from the [releases page](https://github.com/Cysharp/UnitGenerator/releases), disable Any Platform, disable Include all platforms and set label as `RoslynAnalyzer`.
+Minimum supported Unity version is `2022.3.12f1`.
 
-It works in Unity Editor however does not work on IDE because Unity does not generate analyzer reference to `.csproj`. We provides [CsprojModifer](https://github.com/Cysharp/CsprojModifier) to analyzer support, uses `Add analyzer references to generated .csproj` supports both IDE and Unity Editor.
+The easiest way is to install `UnitGenerator` from NuGet using [NuGetForUnity](https://github.com/GlitchEnzo/NuGetForUnity).
 
-Unity(2020) does not support C# 9.0 so can not use directly. However, C# Source Genertor supports output source as file.
-
-1. Create `UnitSourceGen.csproj`.
-
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
-
-        <!-- add this two lines and configure output path -->
-        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-        <CompilerGeneratedFilesOutputPath>$(ProjectDir)..\Generated</CompilerGeneratedFilesOutputPath>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <!-- reference UnitGenerator -->
-        <PackageReference Include="UnitGenerator" Version="1.0.0" />
-
-        <!-- add target sources path from Unity -->
-        <Compile Include="..\MyUnity\Assets\Scripts\Models\**\*.cs" />
-    </ItemGroup>
-</Project>
-```
-
-2. install [.NET SDK](https://dotnet.microsoft.com/download) and run this command.
-
-```
-dotnet build UnitSourceGen.csproj
-```
-
-File will be generated under `UnitGenerator\UnitGenerator.SourceGenerator\*.Generated.cs`. `UnitOfAttribute` is also included in generated folder, so at first, run build command and get attribute to configure.
+Alternatively, you can download `UnitGenerator.dll` from the [releases page](https://github.com/Cysharp/UnitGenerator/releases) page and set it up as a `RoslynAnalyzer` to make it work.
 
 License
 ---

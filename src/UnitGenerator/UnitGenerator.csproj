@@ -1,35 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>13</LangVersion>
-        <Nullable>enable</Nullable>
-        <NoWarn>$(NoWarn);CS1591</NoWarn>
-        <IsRoslynComponent>true</IsRoslynComponent>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>13</LangVersion>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IsRoslynComponent>true</IsRoslynComponent>
 
-        <!-- does not need runtime self -->
-        <IncludeBuildOutput>false</IncludeBuildOutput>
-        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-        <IncludeSymbols>false</IncludeSymbols>
-        <DevelopmentDependency>true</DevelopmentDependency>
+    <!-- does not need runtime self -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IncludeSymbols>false</IncludeSymbols>
+    <DevelopmentDependency>true</DevelopmentDependency>
 
-        <!-- NuGet -->
-        <PackageId>UnitGenerator</PackageId>
-        <Description>C# Source Generator to create value-object, inspired by units of measure.</Description>
-        <IsPackable>true</IsPackable>
-    </PropertyGroup>
+    <!-- NuGet -->
+    <IsPackable>true</IsPackable>
+    <PackageId>UnitGenerator</PackageId>
+    <Description>C# Source Generator to create value-object, inspired by units of measure.</Description>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <!-- Create nuget package as analyzer -->
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    </ItemGroup>
+  <ItemGroup>
+    <!-- Create nuget package as analyzer -->
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" PrivateAssets="all" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" PrivateAssets="all" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-    </ItemGroup>
+  <ItemGroup>
+   <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
 
 </Project>
